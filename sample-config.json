@@ -1,1 +1,6 @@
-{ "dgg_key": "obamna", "openai_key": "cantclosevim" }
+{
+  "dgg_key": "obamna",
+  "openai_key": "cantclosevim",
+  "admins": ["tena"],
+  "blacklist": []
+}
