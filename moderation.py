@@ -4,10 +4,11 @@ import re
 
 from dggbot import Message
 import openai
-import tiktoken
+
 import requests
 
 vyneer_phrases = "https://vyneer.me/tools/phrases?ts=1"
+tena_emotes = "https://tena.dev/api/emotes"
 regex_check = re.compile(r"^/.*/$")
 
 
@@ -33,6 +34,12 @@ def get_phrases():
     return tuple(phrases), regex_phrases
 
 
+@cache
+def get_emotes():
+    r = requests.get(tena_emotes).json()
+    return [e for e in r.keys()]
+
+
 def bad_word(message: str) -> bool:
     phrases, regex_phrases = get_phrases()
     return any(p in message for p in phrases) or any(
@@ -46,16 +53,3 @@ def bad_prompt(msg: Message):
         print(f"This prompt was flagged by openai: \n {msg.nick}: {msg.data}")
         return True
     return False
-
-
-def count_tokens(messages: dict):
-    encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    num_tokens = 0
-    for message in messages:
-        num_tokens += 4
-        for key, value in message.items():
-            num_tokens += len(encoding.encode(value))
-            if key == "name":
-                num_tokens += -1
-    num_tokens += 2
-    return num_tokens
