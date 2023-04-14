@@ -23,6 +23,8 @@ cooldown = 30
 
 
 def pre_msg_check(msg: Message):
+    if msg.nick not in convos.keys():
+        convos[msg.nick] = base_convo()
     if bad_word(msg.data) or bad_prompt(msg):
         return False
     if is_admin(msg):
@@ -36,18 +38,17 @@ def pre_msg_check(msg: Message):
     if msg.nick in cfg["blacklist"]:
         print(f"{msg.nick} is blacklisted")
         return False
-    if not msg.nick in convos.keys():
-        convos[msg.nick] = base_convo()
-    if len(convos[msg.nick]) >= 2:
+    if msg.nick in convos.keys() and len(convos[msg.nick]) >= 21:
         print(f"sent to {msg.nick} twice already")
         return False
     return True
 
 
 @bot.event()
-@bot.check(pre_msg_check)
 def on_mention(msg: Message):
     global last_sent
+    if not pre_msg_check(msg):
+        return
     convos[msg.nick].append(user_msg(msg.data))
     while count_tokens(convos[msg.nick]) > 4096:
         print("Trimming the prompt")
@@ -67,10 +68,8 @@ def on_mention(msg: Message):
             rsp = rsp.replace(f"{punc}{emote}", f"{punc} {emote}")
     rsp = rsp.replace("As an AI language model", " BINGQILIN As an AI language model")
     rsp = rsp.replace("as an AI language model", " BINGQILIN as an AI language model")
-    if ">" in rsp:
-        msg.reply(f"> {rsp}")
-    elif "/me" in rsp:
-        msg.reply(f"/me {rsp}")
+    if rsp.startswith(">") or rsp.startswith("/me"):
+        msg.reply(rsp)
     else:
         msg.reply(f"{msg.nick} {rsp}")
     print(rsp)
@@ -123,22 +122,5 @@ def cd(msg: Message, seconds: str, *_):
     msg.reply(f"{msg.nick} PepOk changed the cooldown to {cooldown}s")
 
 
-# if __name__ == "__main__":
-#     bot.run_forever()
-
-
-def test(question):
-    if not "tena" in convos.keys():
-        convos["tena"] = base_convo()
-    convos["tena"].append(user_msg(question))
-    print(convos)
-    print("Sending request to openai")
-    rsp = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=convos["tena"])
-    rsp = rsp["choices"][0]["message"]["content"]
-    convos["tena"].append(gpt_msg(rsp))
-    print(f"tena {rsp}")
-
-
 if __name__ == "__main__":
-    while True:
-        test(input("Say something: "))
+    bot.run_forever()

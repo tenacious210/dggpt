@@ -1,10 +1,8 @@
 import tiktoken
 import json
 from typing import Union
-from functools import cache
 
 
-@cache
 def base_convo() -> list[dict]:
     with open("system.txt", "r") as sys_txt:
         system = sys_txt.read()
