@@ -63,7 +63,7 @@ def on_mention(msg: Message):
         return
     convos[msg.nick].append(gpt_msg(rsp))
     for emote in get_emotes():
-        for punc in (".", ",", "?", "!", "'", '"', ">"):
+        for punc in (".", ",", "?", "!", "'", '"', ">", "@", "#", "(", ")", "-", "*"):
             rsp = rsp.replace(f"{emote}{punc}", f"{emote} {punc}")
             rsp = rsp.replace(f"{punc}{emote}", f"{punc} {emote}")
     rsp = rsp.replace("As an AI language model", " BINGQILIN As an AI language model")
@@ -86,10 +86,16 @@ def cc(msg: Message):
 @bot.command()
 @bot.check(is_admin)
 def clear(msg: Message, name: str, *_):
-    if name not in convos.keys():
-        msg.reply(f"{msg.nick} I have no convo with {name} MMMM")
-    convos[name] = base_convo()
-    msg.reply(f"{msg.nick} PepOk cleared convo for {name}")
+    global convos
+    if name in convos.keys():
+        convos[name] = base_convo()
+        rsp = f"{msg.nick} PepOk cleared convo for {name}"
+    elif name == "all":
+        convos = {}
+        rsp = f"{msg.nick} PepOk cleared all convos"
+    else:
+        rsp = f"{msg.nick} I have no convo with {name} MMMM"
+    msg.reply(rsp)
 
 
 @bot.command()
