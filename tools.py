@@ -3,7 +3,7 @@ import json
 from typing import Union
 
 
-def base_convo() -> list[dict]:
+def base_history() -> list[dict]:
     with open("system.txt", "r") as sys_txt:
         system = sys_txt.read()
 

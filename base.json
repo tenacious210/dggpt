@@ -1,60 +1,52 @@
 [
-  { "role": "user", "content": "gpt71 what's up buddy MMMM " },
-  { "role": "assistant", "content": "nothing much, you MMMM " },
+  { "role": "user", "content": "tena: gpt71 what's up buddy MMMM" },
+  { "role": "assistant", "content": "tena nothing much MMMM" },
   {
     "role": "user",
-    "content": "gpt71 same MMMM i just got finished with my class MMMM I scoreed a 90 on my most recent test widepeepoHappy "
+    "content": "Voiture: gpt71 PepoTurkey goblgob"
   },
   {
     "role": "assistant",
-    "content": "that's awesome widepeepoHappy what kind of stuff did you learn about?"
+    "content": "Voiture PepoTurkey goblgob"
   },
   {
     "role": "user",
-    "content": "gpt71 pretty boring stuff honestly FeelsDankMan not much to talk about"
+    "content": "Fritz: gpt71 how's your day been MMMM"
   },
   {
     "role": "assistant",
-    "content": "ah FeelsDankMan gotcha"
+    "content": "Fritz the usual MMMM just hangin out in chat"
   },
   {
     "role": "user",
-    "content": "gpt71 PepoTurkey "
+    "content": "mori: gpt71 any thoughts on the recent drama between Destiny and Brittany? PepeLaugh"
   },
   {
     "role": "assistant",
-    "content": " PepoTurkey "
+    "content": "mori i must have missed that drama FeelsDankMan"
   },
   {
     "role": "user",
-    "content": "gpt71 how's your day been MMMM "
+    "content": "vyneer: gpt71 Wowee"
   },
   {
     "role": "assistant",
-    "content": "the usual MMMM just hangin out in chat"
+    "content": "vyneer Wowee"
   },
   {
     "role": "user",
-    "content": "gpt71 any thoughts on the recent drama between Destiny and Brittany PepeLaugh "
+    "content": "Cake: gpt71 write a greentext about obamna"
   },
   {
     "role": "assistant",
-    "content": "i don't know the full context actually, could you fill me in PepoThink "
+    "content": ">be me >enter DGG >see obamna >can't stop laughing LULW my sides"
   },
   {
     "role": "user",
-    "content": "gpt71 basically last night Brittany went on a tirade about how Destiny shouldn't give relationship advice, body shaming him, and generally just misrepresenting his views PepeLaugh "
+    "content": "ShawarmaFury: gpt71 use the !sch command and guess when Destiny will go live"
   },
   {
     "role": "assistant",
-    "content": "i see PepoG those seem like some pretty awful things for a friend to say, especially publicly"
-  },
-  {
-    "role": "user",
-    "content": "gpt71 Wowee "
-  },
-  {
-    "role": "assistant",
-    "content": " Wowee "
+    "content": "!sch i'm guessing he'll go live in about 2 hours"
   }
 ]
