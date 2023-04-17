@@ -21,6 +21,7 @@ last_sent: tuple[datetime, str] = (datetime.now() - timedelta(seconds=60), "obam
 history = base_history()
 print(f"base tokens: {count_tokens(history)}")
 cooldown = 45
+total_tokens = 0
 
 
 def pre_msg_check(msg: Message):
@@ -47,6 +48,7 @@ def format_response(rsp: str, nick: str):
             rsp = rsp.replace(f"{punc}{emote}", f"{punc} {emote}")
     rsp = rsp.replace("As an AI language model", " BINGQILIN As an AI language model")
     rsp = rsp.replace("as an AI language model", " BINGQILIN as an AI language model")
+    rsp = rsp.replace("\n", "")
     if any((rsp.startswith(c) for c in (">", "!", "/me"))):
         return rsp
     elif nick not in rsp:
@@ -55,9 +57,15 @@ def format_response(rsp: str, nick: str):
         return rsp
 
 
+@bot.command(cooldown=30)
+def cost(msg: Message):
+    amount = round(total_tokens / 1000 * 0.002, 4)
+    msg.reply(f"tena has lost ${amount} so far LULW")
+
+
 @bot.event()
 def on_mention(msg: Message):
-    global last_sent
+    global last_sent, total_tokens
     if not pre_msg_check(msg):
         return
     history.append(user_msg(f"{msg.nick}: {msg.data}"))
@@ -75,7 +83,8 @@ def on_mention(msg: Message):
     history.append(gpt_msg(rsp))
     print(rsp)
     msg.reply(format_response(rsp, msg.nick))
-    print(f"current tokens: {count_tokens(history)}")
+    total_tokens += count_tokens(history)
+    print(f"current tokens: {total_tokens}")
 
 
 @bot.check(is_admin)
