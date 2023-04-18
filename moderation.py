@@ -15,7 +15,7 @@ regex_check = re.compile(r"^/.*/$")
 def is_regex(text: str) -> Union[re.Pattern, None]:
     if regex_check.search(text):
         try:
-            return re.compile(text[1:-1])
+            return re.compile(text[1:-1], re.IGNORECASE)
         except re.error:
             pass
 
@@ -42,7 +42,7 @@ def get_emotes():
 
 def bad_word(message: str) -> bool:
     phrases, regex_phrases = get_phrases()
-    return any(p in message for p in phrases) or any(
+    return any(p.lower() in message.lower() for p in phrases) or any(
         regex.search(message) for regex in regex_phrases
     )
 
