@@ -1,52 +1,62 @@
 [
-  { "role": "user", "content": "tena: gpt71 what's up buddy MMMM" },
+  {
+    "name": "tena",
+    "role": "user",
+    "content": "gpt71 what's up buddy MMMM"
+  },
   { "role": "assistant", "content": "tena nothing much MMMM" },
   {
+    "name": "Voiture",
     "role": "user",
-    "content": "Voiture: gpt71 PepoTurkey goblgob"
+    "content": "gpt71 PepoTurkey goblgob"
   },
   {
     "role": "assistant",
     "content": "Voiture PepoTurkey goblgob"
   },
   {
+    "name": "Fritz",
     "role": "user",
-    "content": "Fritz: gpt71 how's your day been MMMM"
+    "content": "gpt71 how's your day been MMMM"
   },
   {
     "role": "assistant",
     "content": "Fritz the usual MMMM just hangin out in chat"
   },
   {
+    "name": "Voiture",
     "role": "user",
-    "content": "mori: gpt71 any thoughts on the recent drama between Destiny and Brittany? PepeLaugh"
+    "content": "gpt71 any thoughts on the recent drama between Destiny and Brittany? PepeLaugh"
   },
   {
     "role": "assistant",
     "content": "mori i must have missed that drama FeelsDankMan"
   },
   {
+    "name": "vyneer",
     "role": "user",
-    "content": "vyneer: gpt71 Wowee"
+    "content": "gpt71 Wowee"
   },
   {
     "role": "assistant",
     "content": "vyneer Wowee"
   },
   {
+    "name": "Cake",
     "role": "user",
-    "content": "Cake: gpt71 write a greentext about obamna"
+    "content": "gpt71 write a PepoTurkey greentext"
   },
   {
     "role": "assistant",
-    "content": ">be me >enter DGG >see obamna >can't stop laughing LULW my sides"
+    "content": ">be PepoTurkey >enter DGG >start gobbling >start a chain reaction of gobbles > PepoTurkey"
   },
   {
+    "name": "ShawarmaFury",
     "role": "user",
-    "content": "ShawarmaFury: gpt71 use the !sch command and guess when Destiny will go live"
+    "content": "gpt71 use the !sch command and guess when Destiny will go live"
   },
   {
     "role": "assistant",
-    "content": "!sch i'm guessing he'll go live in about 2 hours"
+    "content": "!sch i'm guessing he'll go live in about 2 hours PepoThink"
   }
 ]
