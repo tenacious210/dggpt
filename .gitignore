@@ -1,6 +1,4 @@
 .vscode
 __pycache__
 config.json
-system-old.txt
-tests.py
-bad_words.csv
+monthly_tokens.json

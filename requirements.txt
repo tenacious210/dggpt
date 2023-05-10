@@ -2,3 +2,4 @@ openai
 tiktoken
 dgg-bot
 requests
+jsonschema
