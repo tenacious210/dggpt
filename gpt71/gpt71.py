@@ -1,3 +1,4 @@
+from collections import deque
 from datetime import datetime, timedelta
 from dggbot import DGGBot, Message
 from .config import BASE_CONVO, BASE_SUMMARY, read_config, save_config
@@ -5,6 +6,7 @@ from .gpt import generate_response, generate_summary, generate_solution
 from .gpt.convo import delete_last_prompt
 from .gpt.tokens import get_cost_from_tokens
 from .dgg import format_dgg_message, bot_filter
+from .dgg.moderation import SPAM_SEARCH_AMOUNT
 from .request import request_debate, request_emotes, request_phrases
 
 
@@ -22,10 +24,14 @@ class GPTBot(DGGBot):
         )
         self.convo: list[dict] = list(BASE_CONVO)
         self.summaries: list[dict] = list(BASE_SUMMARY)
+        self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 45
 
     def is_admin(self, msg: Message) -> bool:
         return msg.nick in self.gpt_config["admins"]
+
+    def update_history(self, msg: Message):
+        self.message_history.append(msg.data)
 
     def pre_response_check(self, msg: Message) -> bool:
         if self.is_admin(msg):
@@ -43,10 +49,12 @@ class GPTBot(DGGBot):
             return
         self.last_sent = (datetime.now(), msg.nick)
         generate_response(msg, self.convo)
-        if bot_filter(self.convo[-1]["content"]):
+        formatted = format_dgg_message(self.convo[-1]["content"], msg.nick)
+        if bot_filter(formatted, self.message_history):
+            print(f"caught this: {formatted}")
             delete_last_prompt(self.convo)
             return
-        msg.reply(format_dgg_message(self.convo[-1]["content"], msg.nick))
+        msg.reply(formatted)
 
     def send_cost(self, msg: Message):
         msg.reply(f"tena has lost ${get_cost_from_tokens()} this month LULW")

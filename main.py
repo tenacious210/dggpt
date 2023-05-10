@@ -9,6 +9,11 @@ def on_mention(msg: Message):
     bot.respond_to_mention(msg)
 
 
+@bot.event()
+def on_msg(msg: Message):
+    bot.update_history(msg)
+
+
 @bot.command(cooldown=30)
 def cost(msg: Message):
     bot.send_cost(msg)
