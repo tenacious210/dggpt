@@ -35,7 +35,7 @@ def request_phrases() -> tuple[tuple]:
 def request_emotes() -> tuple:
     """Returns a tuple of all current emotes on tena.dev"""
     emotes = requests.get(EMOTE_LINK).json().keys()
-    return (emote_name for emote_name in emotes)
+    return tuple([emote_name for emote_name in emotes])
 
 
 def request_debate(nick1: str, nick2: str, amount: int, day: str = None) -> str:
