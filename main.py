@@ -1,6 +1,9 @@
+import os
+import logging
 from dggbot import Message
 from gpt71 import GPTBot
 
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 bot = GPTBot()
 
 

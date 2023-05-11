@@ -1,10 +1,12 @@
 # Handles reading/writing files in the config folder
-
 import os
 import json
+import logging
 from typing import Union
 from datetime import datetime
 from jsonschema import validate, ValidationError
+
+logger = logging.getLogger(__name__)
 
 os.chdir("config")
 
@@ -28,9 +30,12 @@ with open("bad_words.csv", "r") as bad_words_csv:
 with open("config_schema.json", "r") as schema_json:
     _schema = json.load(schema_json)
 
+logger.debug("Loaded constants from config files")
+
 
 def read_config() -> dict[str, Union[str, list]]:
     """Reads the config.json file, returns it as a dict"""
+    logger.debug("Reading config file")
     with open("config.json", "r") as config_json:
         config = json.load(config_json)
     return config
@@ -38,6 +43,7 @@ def read_config() -> dict[str, Union[str, list]]:
 
 def save_config(config: dict) -> None:
     """Validates and writes a dict to the config.json file"""
+    logger.debug("Saving config file")
     try:
         validate(instance=config, schema=_schema)
     except ValidationError as e:
@@ -61,6 +67,8 @@ def add_monthly_tokens(amount: int) -> None:
     with open("monthly_tokens.json", "w") as monthly_tokens_json:
         json.dump(monthly_tokens, monthly_tokens_json)
 
+    logger.debug(f"Added {amount} to {this_month} in monthly_tokens")
+
 
 def read_monthly_tokens() -> int:
     """Reads this month's token tally"""
@@ -70,4 +78,6 @@ def read_monthly_tokens() -> int:
     if this_month not in monthly_tokens.keys():
         add_monthly_tokens(0)
         return 0
-    return monthly_tokens[this_month]
+    current_tokens = monthly_tokens[this_month]
+    logger.debug(f"Read {current_tokens} tokens for {this_month} from monthly_tokens")
+    return current_tokens

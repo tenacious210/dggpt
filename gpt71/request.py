@@ -1,10 +1,11 @@
 # Handles all requests that use the requests module
-
+import logging
 from functools import cache
 from datetime import datetime
 import re
 import requests
 
+logger = logging.getLogger(__name__)
 
 LOG_LINK = "https://api-v2.rustlesearch.dev/anon/search"
 PHRASE_LINK = "https://vyneer.me/tools/phrases?ts=1"
@@ -12,7 +13,7 @@ EMOTE_LINK = "https://tena.dev/api/emotes"
 
 
 @cache
-def request_phrases() -> tuple[tuple]:
+def request_phrases() -> tuple[tuple[str], tuple[re.Pattern]]:
     def is_regex(text: str):
         if re.search(r"^/.*/$", text):
             try:
@@ -20,6 +21,7 @@ def request_phrases() -> tuple[tuple]:
             except re.error:
                 pass
 
+    logger.debug("Getting phrases from vyneer.me ...")
     raw_phrases = requests.get(PHRASE_LINK)
     regex_phrases = []
     phrases = []
@@ -28,13 +30,16 @@ def request_phrases() -> tuple[tuple]:
             regex_phrases.append(regex)
         else:
             phrases.append(phrase)
+    logger.debug("Phrases loaded from vyneer.me")
     return tuple(phrases), tuple(regex_phrases)
 
 
 @cache
 def request_emotes() -> tuple:
     """Returns a tuple of all current emotes on tena.dev"""
+    logger.debug("Getting emotes from tena.dev ...")
     emotes = requests.get(EMOTE_LINK).json().keys()
+    logger.debug("Emotes loaded from tena.dev")
     return tuple([emote_name for emote_name in emotes])
 
 
@@ -47,8 +52,10 @@ def request_debate(nick1: str, nick2: str, amount: int, day: str = None) -> str:
         f"&start_date={day}&end_date={day}&channel=Destinygg"
         f"&text=%22{nick1}%22%20%7C%20%22{nick2}%22"
     )
+    logger.debug(f"Getting messages from rustlesearch.dev ...")
     raw = requests.get(r_link).json()
     if not raw["data"] or not raw["data"]["messages"]:
+        logger.debug("No messages found from rustlesearch.dev")
         return "No messages found."
     i, debate = 0, []
     for message in reversed(raw["data"]["messages"]):
@@ -56,4 +63,5 @@ def request_debate(nick1: str, nick2: str, amount: int, day: str = None) -> str:
             break
         debate.append(f'{message["username"]}: {message["text"]}')
         i += 1
+    logger.debug(f"{amount} messages loaded from rustlesearch.dev")
     return "\n".join(debate)
