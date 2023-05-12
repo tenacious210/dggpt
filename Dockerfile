@@ -3,5 +3,5 @@ WORKDIR /dggpt
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-ENV LOGLEVEL=INFO
+ENV LOGLEVEL=DEBUG
 ENTRYPOINT ["python", "main.py"]

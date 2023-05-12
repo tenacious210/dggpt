@@ -3,7 +3,11 @@ import logging
 from dggbot import Message
 from gpt71 import GPTBot
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
+logging.getLogger("websocket").setLevel("CRITICAL")
+for logger_name in ("dgg-bot", "openai", "urllib3"):
+    logging.getLogger(logger_name).setLevel("INFO")
+
 bot = GPTBot()
 
 
