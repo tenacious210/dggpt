@@ -6,9 +6,7 @@ from .completions import moderation_completion
 
 logger = logging.getLogger(__name__)
 
-bad_word_patterns = (
-    re.compile(rf"\b{bad_word}\b", re.IGNORECASE) for bad_word in BAD_WORDS
-)
+bad_patterns = [re.compile(rf"\b{bad_word}\b", re.IGNORECASE) for bad_word in BAD_WORDS]
 
 
 def flag_check(message: str, raise_error: bool = True) -> list:
@@ -20,14 +18,10 @@ def flag_check(message: str, raise_error: bool = True) -> list:
 
 def remove_bad_words(message: str) -> str:
     """Removes all bad words (defined in bad_words.csv) from a string."""
-    removed = []
-    for bad_word_regex in bad_word_patterns:
-        message = bad_word_regex.sub("_", message)
-        removed.append(bad_word_regex)
-    if removed:
-        logger.debug(
-            "Removed bad words:"
-            + f'\n  Output: "{message}"'
-            + f'\n  Removed words: {", ".join(removed)}'
-        )
+    old_message = message
+    for bad_pattern in bad_patterns:
+        if bad_pattern.search(message):
+            message = bad_pattern.sub("_", message)
+    if old_message != message:
+        logger.debug(f"Removed bad words from the message")
     return message
