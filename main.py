@@ -28,7 +28,7 @@ def cost(msg: Message):
 
 @bot.check(bot.is_admin)
 @bot.command()
-def summarize(msg: Message, nick1: str, nick2: str, amount: int = 10):
+def summarize(msg: Message, nick1: str, nick2: str, amount: str = "10"):
     bot.send_summary(msg, nick1, nick2, amount)
 
 

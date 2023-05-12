@@ -75,11 +75,15 @@ class GPTBot(DGGBot):
         logger.info(f"Sending cost ({cost})")
         msg.reply(f"tena has lost ${cost} this month LULW")
 
-    def send_summary(self, msg: Message, nick1: str, nick2: str, amount: int):
+    def send_summary(self, msg: Message, nick1: str, nick2: str, amount: str | int):
         logger.info(f"{msg.nick} used !summarize on {nick1} & {nick2}")
+        self.last_sent = (datetime.now(), msg.nick)
         self.summaries = list(BASE_SUMMARY)
         debate = request_debate(nick1, nick2, amount)
-        generate_summary(debate, self.summaries)
+        if isinstance(debate, str):
+            msg.reply(debate)
+            return
+        generate_summary("\n".join(debate), self.summaries)
         logger.info("Sending summary")
         msg.reply(self.summaries[-1]["content"])
 

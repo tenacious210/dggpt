@@ -43,8 +43,15 @@ def request_emotes() -> tuple:
     return tuple([emote_name for emote_name in emotes])
 
 
-def request_debate(nick1: str, nick2: str, amount: int, day: str = None) -> str:
+def request_debate(
+    nick1: str, nick2: str, amount: str | int, day: str = None
+) -> list | str:
     """Returns messages from 2 users on rustlesearch.dev where they mention eachother."""
+    try:
+        amount = int(amount)
+    except ValueError:
+        logger.info('"amount" was given a non-int value')
+        return "Message amount wasn't an integer MMMM"
     if not day:
         day = datetime.utcnow().strftime("%Y-%m-%d")
     r_link = (
@@ -55,13 +62,13 @@ def request_debate(nick1: str, nick2: str, amount: int, day: str = None) -> str:
     logger.debug(f"Getting messages from rustlesearch.dev ...")
     raw = requests.get(r_link).json()
     if not raw["data"] or not raw["data"]["messages"]:
-        logger.debug("No messages found from rustlesearch.dev")
-        return "No messages found."
+        logger.info("No messages found from rustlesearch.dev")
+        return "No messages found MMMM"
     i, debate = 0, []
     for message in reversed(raw["data"]["messages"]):
         if i == amount:
             break
         debate.append(f'{message["username"]}: {message["text"]}')
         i += 1
-    logger.debug(f"{amount} messages loaded from rustlesearch.dev")
-    return "\n".join(debate)
+    logger.info(f"{amount} messages loaded from rustlesearch.dev")
+    return debate
