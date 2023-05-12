@@ -2,7 +2,6 @@
 import os
 import json
 import logging
-from typing import Union
 from datetime import datetime
 from jsonschema import validate, ValidationError
 
@@ -33,7 +32,7 @@ with open("config_schema.json", "r") as schema_json:
 logger.debug("Loaded constants from config files")
 
 
-def read_config() -> dict[str, Union[str, list]]:
+def read_config() -> dict[str, str | list]:
     """Reads the config.json file, returns it as a dict"""
     logger.debug("Reading config file")
     with open("config.json", "r") as config_json:

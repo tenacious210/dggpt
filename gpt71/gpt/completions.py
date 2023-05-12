@@ -11,7 +11,7 @@ MAX_TOKENS = 100
 openai.api_key = OPENAI_KEY
 
 
-def moderation_completion(message: str) -> list:
+def moderation_completion(message: str) -> list[str]:
     """
     Gets a moderation completion from openai.
     Returns the flags that the prompt triggered.
