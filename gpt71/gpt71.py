@@ -56,7 +56,7 @@ class GPTBot(DGGBot):
         return True
 
     def respond_to_mention(self, msg: Message):
-        logger.info(f"Bot was mentioned:\n  {msg.nick}: {msg.data}")
+        logger.debug(f"Bot was mentioned:\n  {msg.nick}: {msg.data}")
         if not self.pre_response_check(msg):
             return
         self.last_sent = (datetime.now(), msg.nick)
@@ -93,6 +93,7 @@ class GPTBot(DGGBot):
             logger.info(f"No summary stored, response cancelled")
             msg.reply("I don't have a summary stored MMMM")
             return
+        self.last_sent = (datetime.now(), msg.nick)
         generate_solution(self.summaries)
         logger.info("Sending solution")
         msg.reply(self.summaries[-1]["content"])

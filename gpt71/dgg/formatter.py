@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 def format_dgg_message(message: str, nick: str = None) -> str:
-    logger.debug(f'Before formatting:\n  "{message}"')
     for emote in request_emotes():
         for punc in (".", ",", "?", "!", "'", '"', ">", "@", "#", "(", ")", "-", "*"):
             message = message.replace(f"{emote}{punc}", f"{emote} {punc}")
@@ -21,5 +20,4 @@ def format_dgg_message(message: str, nick: str = None) -> str:
         and not any((message.startswith(c) for c in (">", "!", "/me", "ඞ")))
     ):
         message = f"{nick} {message}"
-    logger.debug(f'After formatting:\n  "{message}"')
     return message

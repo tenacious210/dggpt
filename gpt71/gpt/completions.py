@@ -42,7 +42,8 @@ def chat_completion(convo: list[dict]) -> list[dict]:
         max_tokens=MAX_TOKENS,
         messages=convo,
     )
-    convo.append(rsp["choices"][0]["message"])
-    logger.info(f"Chat completion recieved\n  Output: {convo[-1]}")
+    message = dict(rsp["choices"][0]["message"])
+    convo.append(message)
+    logger.info(f"Chat completion recieved\n  Output: {message}")
     add_monthly_tokens(rsp["usage"]["total_tokens"])
     return convo
