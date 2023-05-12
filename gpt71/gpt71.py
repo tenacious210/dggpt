@@ -38,6 +38,9 @@ class GPTBot(DGGBot):
         self.message_history.append(msg.data)
 
     def pre_response_check(self, msg: Message) -> bool:
+        if self.is_command(msg):
+            logger.info("Check fail: Name and command used at the same time")
+            return False
         if self.is_admin(msg):
             logger.info("Check pass: Admin requested")
             return True
