@@ -4,11 +4,12 @@ import logging
 from gpt71.request import request_emotes
 
 logger = logging.getLogger(__name__)
+PUNCS = tuple(". , ? ! ' \" > @ # ( ) - * :".split())
 
 
 def format_dgg_message(message: str, nick: str = None) -> str:
     for emote in request_emotes():
-        for punc in (".", ",", "?", "!", "'", '"', ">", "@", "#", "(", ")", "-", "*"):
+        for punc in PUNCS:
             message = message.replace(f"{emote}{punc}", f"{emote} {punc}")
             message = message.replace(f"{punc}{emote}", f"{punc} {emote}")
     meme = "as an AI language model"
