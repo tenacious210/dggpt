@@ -6,6 +6,7 @@ from .config import BASE_CONVO, BASE_SUMMARY, read_config, save_config
 from .gpt import generate_response, generate_summary, generate_solution
 from .gpt.convo import delete_last_prompt
 from .gpt.tokens import get_cost_from_tokens, count_tokens
+from .gpt.moderation import flag_check
 from .dgg import format_dgg_message, will_trigger_bot_filter
 from .dgg.moderation import SPAM_SEARCH_AMOUNT
 from .request import request_debate, request_emotes, request_phrases
@@ -37,11 +38,25 @@ class GPTBot(DGGBot):
     def update_history(self, msg: Message):
         self.message_history.append(msg.data)
 
+    def respond_with_flags(self, msg: Message):
+        if flags := flag_check(msg.data, raise_error=False):
+            msg.reply(
+                f"{msg.nick} Congrats, your prompt was flagged"
+                + f" by openai for: {', '.join(flags)} GIGACHAD"
+            )
+        return flags
+
     def pre_response_check(self, msg: Message) -> bool:
         if self.is_command(msg):
             logger.info("Check fail: Name and command used at the same time")
             return False
+        if self.convo[-1]["role"] == "user":
+            logger.info("Check fail: Still waiting on the last completion")
+            return False
         if self.is_admin(msg):
+            if self.respond_with_flags(msg):
+                logger.info(f"Check fail: Admin prompt was flagged")
+                return False
             logger.info("Check pass: Admin requested")
             return True
         last_sent_delta = (datetime.now() - self.last_sent[0]).seconds
@@ -54,6 +69,9 @@ class GPTBot(DGGBot):
             return False
         if msg.nick in self.gpt_config["blacklist"]:
             logger.info(f"Check fail: {msg.nick} is blacklisted")
+            return False
+        if self.respond_with_flags(msg):
+            logger.info(f"Check fail: Prompt was flagged")
             return False
         logger.info("Check pass")
         return True

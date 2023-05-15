@@ -7,7 +7,7 @@ from .convo import trim_tokens
 
 logger = logging.getLogger(__name__)
 
-TOKEN_LIMIT = 1350
+TOKEN_LIMIT = 1500
 
 user_message: dict = lambda name, data: {"name": name, "role": "user", "content": data}
 summary_message: dict = lambda data: {"role": "user", "content": data}
@@ -15,12 +15,11 @@ summary_message: dict = lambda data: {"role": "user", "content": data}
 
 def generate_response(msg: Message, convo: list[dict]) -> list[dict]:
     """
-    Moderates a prompt from DGG and then gets a chat completion from openai
+    Gets a chat completion from openai for a DGG message
     Takes in an openai convo, returns the new openai convo
-    Warning: Does not moderate the response!
+    Warning: Does not moderate the input or response!
     """
     logger.info("Getting chat response...")
-    flag_check(msg.data)
     convo.append(user_message(msg.nick, msg.data))
     return chat_completion(trim_tokens(convo, TOKEN_LIMIT))
 
