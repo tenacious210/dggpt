@@ -2,7 +2,7 @@
 import logging
 import openai
 from openai.error import RateLimitError
-from gpt71.config import OPENAI_KEY, add_monthly_tokens
+from dggpt.config import OPENAI_KEY, add_monthly_tokens
 
 logger = logging.getLogger(__name__)
 

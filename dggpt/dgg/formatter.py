@@ -1,7 +1,7 @@
 # Formats responses to make them DGG appropriate
 import re
 import logging
-from gpt71.request import request_emotes
+from dggpt.request import request_emotes
 
 logger = logging.getLogger(__name__)
 PUNCS = tuple(". , ? ! ' \" > @ # ( ) - * :".split())

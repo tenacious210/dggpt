@@ -14,7 +14,7 @@ from .request import request_debate, request_emotes, request_phrases
 logger = logging.getLogger(__name__)
 
 
-class GPTBot(DGGBot):
+class DGGPTBot(DGGBot):
     """Base form of the bot with no commands"""
 
     def __init__(self):

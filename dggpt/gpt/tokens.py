@@ -1,7 +1,7 @@
 # Calculates various things from openai tokens
 import logging
 import tiktoken
-from gpt71.config import read_monthly_tokens
+from dggpt.config import read_monthly_tokens
 from .completions import CHAT_MODEL
 
 logger = logging.getLogger(__name__)

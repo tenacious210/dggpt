@@ -3,7 +3,7 @@ import re
 import logging
 from collections import deque
 import Levenshtein
-from gpt71.request import request_phrases
+from dggpt.request import request_phrases
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
         if len(message) < 100:
             return False
         for old_message in message_history:
-            if similarity(message.lower().strip(), old_message.lower().strip()) > 0.9:
+            if similarity(message.lower().strip(), old_message.lower().strip()) > 0.95:
                 logger.info(
                     "Failed similarity test:"
                     + f'\n  Input message: "{message}"'

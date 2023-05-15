@@ -1,7 +1,7 @@
 # Handles moderation for prompts to openai
 import re
 import logging
-from gpt71.config import BAD_WORDS
+from dggpt.config import BAD_WORDS
 from .completions import moderation_completion
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 # Various tools for manipulating openai convos
 import logging
-from gpt71.config import BASE_LENGTH
+from dggpt.config import BASE_LENGTH
 from .tokens import count_tokens
 
 logger = logging.getLogger(__name__)
