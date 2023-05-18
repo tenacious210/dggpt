@@ -30,7 +30,7 @@ class DGGPTBot(DGGBot):
         self.summaries: list[dict] = list(BASE_SUMMARY)
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 45
-        logger.info("Bot initialized")
+        logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
     def is_admin(self, msg: Message) -> bool:
         return msg.nick in self.gpt_config["admins"]
