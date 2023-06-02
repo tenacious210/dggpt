@@ -7,7 +7,7 @@ from .convo import trim_tokens
 
 logger = logging.getLogger(__name__)
 
-TOKEN_LIMIT = 1500
+TOKEN_LIMIT = 1350
 
 user_message: dict = lambda name, data: {"name": name, "role": "user", "content": data}
 summary_message: dict = lambda data: {"role": "user", "content": data}
