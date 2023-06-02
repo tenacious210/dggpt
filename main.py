@@ -58,13 +58,13 @@ def wipelast(msg: Message):
 
 @bot.check(bot.is_admin)
 @bot.command()
-def bla(msg: Message, name: str):
+def bla(msg: Message, name: str, *_):
     bot.blacklist_add(msg, name)
 
 
 @bot.check(bot.is_admin)
 @bot.command()
-def blr(msg: Message, name: str):
+def blr(msg: Message, name: str, *_):
     bot.blacklist_remove(msg, name)
 
 
