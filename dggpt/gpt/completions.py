@@ -1,7 +1,7 @@
 # Handles all requests to openai
 import logging
 import openai
-from openai.error import RateLimitError
+from openai.error import RateLimitError, APIError
 from dggpt.config import OPENAI_KEY, add_monthly_tokens
 
 logger = logging.getLogger(__name__)
@@ -45,10 +45,13 @@ def chat_completion(convo: list[dict]) -> list[dict]:
             max_tokens=MAX_TOKENS,
             messages=convo,
         )
-    except RateLimitError:
-        rate_limit_message = "sorry, I got rate limited MMMM try again later"
-        logger.info("Got rate limited.")
-        convo.append({"role": "assistant", "content": rate_limit_message})
+    except RateLimitError or APIError as openai_error:
+        error_name = type(openai_error).__name__
+        error_message = (
+            f"sorry, I got a {error_name} from openai FeelsDankMan try again later"
+        )
+        logger.info("Got an openai error.")
+        convo.append({"role": "assistant", "content": error_message})
         return convo
     message = dict(rsp["choices"][0]["message"])
     convo.append(message)

@@ -21,4 +21,6 @@ def format_dgg_message(message: str, nick: str = None) -> str:
         and not any((message.startswith(c) for c in (">", "!", "/me", "ඞ")))
     ):
         message = f"{nick} {message}"
+    if len(message) > 512:
+        message = message[:511]
     return message
