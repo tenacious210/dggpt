@@ -26,7 +26,7 @@ with open("base_summary.json", "r") as summarize_json:
 with open("bad_words.csv", "r") as bad_words_csv:
     BAD_WORDS = tuple(bad_words_csv.read().split())
 
-with open("config_schema.json", "r") as schema_json:
+with open("schema.config.json", "r") as schema_json:
     _schema = json.load(schema_json)
 
 logger.debug("Loaded constants from config files")
