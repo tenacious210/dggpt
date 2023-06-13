@@ -15,12 +15,6 @@ def format_dgg_message(message: str, nick: str = None) -> str:
     meme = "as an AI language model"
     message = re.sub(meme, f" BINGQILIN {meme}", message, flags=re.IGNORECASE)
     message = message.replace("\n", " ")
-    if (
-        nick
-        and nick not in message
-        and not any((message.startswith(c) for c in (">", "!", "/me", "ඞ")))
-    ):
-        message = f"{nick} {message}"
     if len(message) > 512:
         message = message[:511]
     return message
