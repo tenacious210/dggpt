@@ -74,5 +74,11 @@ def cd(msg: Message, seconds: str, *_):
     bot.change_cooldown(msg, seconds)
 
 
+@bot.check(bot.is_admin)
+@bot.command()
+def maxtokens(msg: Message, limit: str, *_):
+    bot.change_token_limit(msg, limit)
+
+
 if __name__ == "__main__":
     bot.run_forever()

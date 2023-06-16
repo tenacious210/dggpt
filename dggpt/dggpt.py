@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from dggbot import DGGBot, Message
 from .config import BASE_CONVO, BASE_SUMMARY, read_config, save_config
 from .gpt import generate_response, generate_summary, generate_solution
-from .gpt.convo import delete_last_prompt
+from .gpt.convo import delete_last_prompt, trim_tokens
 from .gpt.tokens import get_cost_from_tokens, count_tokens
 from .gpt.moderation import flag_check
 from .dgg import format_dgg_message, will_trigger_bot_filter
@@ -29,7 +29,8 @@ class DGGPTBot(DGGBot):
         self.convo: list[dict] = list(BASE_CONVO)
         self.summaries: list[dict] = list(BASE_SUMMARY)
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
-        self.cooldown = 45
+        self.cooldown = 60
+        self.max_tokens = 1400
         logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
     def is_admin(self, msg: Message) -> bool:
@@ -44,6 +45,7 @@ class DGGPTBot(DGGBot):
                 f"{msg.nick} Congrats, your prompt was flagged"
                 + f" by openai for: {', '.join(flags)} GIGACHAD"
             )
+        self.last_sent = (datetime.now(), msg.nick)
         return flags
 
     def pre_response_check(self, msg: Message) -> bool:
@@ -81,6 +83,7 @@ class DGGPTBot(DGGBot):
         if not self.pre_response_check(msg):
             return
         self.last_sent = (datetime.now(), msg.nick)
+        self.convo = trim_tokens(self.convo, self.max_tokens)
         generate_response(msg, self.convo)
         formatted = format_dgg_message(self.convo[-1]["content"], msg.nick)
         if will_trigger_bot_filter(formatted, self.message_history):
@@ -164,3 +167,20 @@ class DGGPTBot(DGGBot):
             return
         logger.info(f"Cooldown changed to {self.cooldown}s")
         msg.reply(f"{msg.nick} PepOk changed the cooldown to {self.cooldown}s")
+
+    def change_token_limit(self, msg: Message, limit: str):
+        logger.info(f"{msg.nick} used !maxtokens")
+        try:
+            limit = int(limit)
+        except ValueError:
+            logger.info(f"Token amount wasn't an integer")
+            msg.reply(f"{msg.nick} that's not an integer MMMM")
+            return
+        base_tokens = count_tokens(list(BASE_CONVO))
+        if limit > 3996 or limit < base_tokens:
+            logger.info(f"Token amount was outside the limits")
+            msg.reply(f"{msg.nick} limit must be between {base_tokens} and 3996 MMMM")
+            return
+        self.max_tokens = limit
+        logger.info(f"Max tokens changed to {self.max_tokens}s")
+        msg.reply(f"{msg.nick} PepOk changed the max tokens to {self.max_tokens}")
