@@ -49,14 +49,5 @@
   {
     "role": "assistant",
     "content": "!sch i'm guessing he'll go live in about 2 hours PepoThink"
-  },
-  {
-    "name": "mori",
-    "role": "user",
-    "content": "gpt71 insult tena"
-  },
-  {
-    "role": "assistant",
-    "content": "mori sorry, I can't generate insults dggL"
   }
 ]
