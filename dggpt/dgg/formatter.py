@@ -12,8 +12,6 @@ def format_dgg_message(message: str, nick: str = None) -> str:
         for punc in PUNCS:
             message = message.replace(f"{emote}{punc}", f"{emote} {punc}")
             message = message.replace(f"{punc}{emote}", f"{punc} {emote}")
-    meme = "as an AI language model"
-    message = re.sub(meme, f" BINGQILIN {meme}", message, flags=re.IGNORECASE)
     message = message.replace("\n", " ")
     if len(message) > 512:
         message = message[:511]

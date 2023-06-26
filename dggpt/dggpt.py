@@ -29,7 +29,7 @@ class DGGPTBot(DGGBot):
         self.convo: list[dict] = list(BASE_CONVO)
         self.summaries: list[dict] = list(BASE_SUMMARY)
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
-        self.cooldown = 60
+        self.cooldown = 30
         self.max_tokens = 1400
         logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
