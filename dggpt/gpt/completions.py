@@ -45,7 +45,7 @@ def chat_completion(convo: list[dict]) -> list[dict]:
             max_tokens=MAX_TOKENS,
             messages=convo,
         )
-    except RateLimitError or APIError or ServiceUnavailableError as openai_error:
+    except (RateLimitError, APIError, ServiceUnavailableError) as openai_error:
         error_name = type(openai_error).__name__
         error_message = (
             f"sorry, I got a {error_name} from openai FeelsDankMan try again later"
