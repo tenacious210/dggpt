@@ -2,7 +2,14 @@ import logging
 from collections import deque
 from datetime import datetime, timedelta
 from dggbot import DGGBot, Message
-from .config import BASE_CONVO, BASE_SUMMARY, read_config, save_config
+from .config import (
+    BASE_CONVO,
+    BASE_SUMMARY,
+    read_config,
+    save_config,
+    read_qd_record,
+    write_qd_record,
+)
 from .gpt import generate_response, generate_summary, generate_solution
 from .gpt.convo import delete_last_prompt, trim_tokens
 from .gpt.tokens import get_cost_from_tokens, count_tokens
@@ -31,6 +38,11 @@ class DGGPTBot(DGGBot):
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 30
         self.max_tokens = 1400
+        self.quickdraw = {
+            "waiting": False,
+            "time_started": datetime.now(),
+            "record": read_qd_record(),
+        }
         logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
     def is_admin(self, msg: Message) -> bool:
@@ -65,9 +77,6 @@ class DGGPTBot(DGGBot):
         if last_sent_delta < self.cooldown:
             remaining = self.cooldown - last_sent_delta
             logger.info(f"Check fail: On cooldown for another {remaining}s")
-            return False
-        if msg.nick == self.last_sent[1]:
-            logger.info(f"Check fail: {msg.nick} requested twice")
             return False
         if msg.nick in self.gpt_config["blacklist"]:
             logger.info(f"Check fail: {msg.nick} is blacklisted")
@@ -184,3 +193,25 @@ class DGGPTBot(DGGBot):
         self.max_tokens = limit
         logger.info(f"Max tokens changed to {self.max_tokens}s")
         msg.reply(f"{msg.nick} PepOk changed the max tokens to {self.max_tokens}")
+
+    def start_quickdraw(self):
+        logger.info("Starting quickdraw")
+        self.send("> QUICKDRAW! PARDNER vs YEEHAW")
+        self.quickdraw["waiting"] = True
+        self.quickdraw["time_started"] = datetime.now()
+        return
+
+    def end_quickdraw(self, msg: Message):
+        logger.info(f"Quickdraw ended by {msg.nick}")
+        self.quickdraw["waiting"] = False
+        delta = datetime.now() - self.quickdraw["time_started"]
+        response_time = round(delta.total_seconds(), 2)
+        ending_message = f"{msg.data} {msg.nick} shot first! Response time: {response_time} seconds. "
+        if response_time < self.quickdraw["record"]["time"]:
+            ending_message += "New record!"
+            self.quickdraw["record"]["time"] = response_time
+            self.quickdraw["record"]["holder"] = msg.nick
+            write_qd_record(self.quickdraw["record"])
+        else:
+            ending_message += f'Record time: {self.quickdraw["record"]["time"]} by {self.quickdraw["record"]["holder"]}'
+        self.send(ending_message)

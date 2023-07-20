@@ -80,3 +80,17 @@ def read_monthly_tokens() -> int:
     current_tokens = monthly_tokens[this_month]
     logger.debug(f"Read {current_tokens} tokens for {this_month} from monthly_tokens")
     return current_tokens
+
+
+def read_qd_record() -> dict:
+    """Reads the quickdraw.record.json file"""
+    logger.debug("Read from the quickdraw.record.json file")
+    with open("quickdraw_record.json", "r") as quickdraw_json:
+        record = json.load(quickdraw_json)
+    return record
+
+
+def write_qd_record(new_record: dict) -> None:
+    """Writes to the quickdraw.record.json file"""
+    with open("quickdraw_record.json", "w") as quickdraw_json:
+        json.dump(new_record, quickdraw_json, indent=2)

@@ -19,6 +19,8 @@ def on_mention(msg: Message):
 @bot.event()
 def on_msg(msg: Message):
     bot.update_history(msg)
+    if bot.quickdraw["waiting"] and (msg.data == "YEEHAW" or msg.data == "PARDNER"):
+        bot.end_quickdraw(msg)
 
 
 @bot.command(cooldown=30)
@@ -78,6 +80,12 @@ def cd(msg: Message, seconds: str, *_):
 @bot.command()
 def maxtokens(msg: Message, limit: str, *_):
     bot.change_token_limit(msg, limit)
+
+
+@bot.check(bot.is_admin)
+@bot.command()
+def quickdraw(msg: Message):
+    bot.start_quickdraw()
 
 
 if __name__ == "__main__":

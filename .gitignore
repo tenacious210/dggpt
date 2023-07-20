@@ -3,3 +3,4 @@ __pycache__
 .vscode
 config.json
 monthly_tokens.json
+quickdraw_record.json
