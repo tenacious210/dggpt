@@ -54,27 +54,27 @@ class DGGPTBot(DGGBot):
     def is_admin(self, msg: Message) -> bool:
         return msg.nick in self.gpt_config["admins"]
 
-    def update_history(self, msg: Message):
-        self.message_history.append(msg.data)
+    def update_history(self, data: str):
+        self.message_history.append(data)
 
-    def respond_with_flags(self, msg: Message):
-        if flags := flag_check(msg.data, raise_error=False):
-            msg.reply(
-                f"{msg.nick} Congrats, your prompt was flagged"
+    def respond_with_flags(self, nick: str, data: str):
+        if flags := flag_check(data, raise_error=False):
+            self.send(
+                f"{nick} Congrats, your prompt was flagged"
                 + f" by openai for: {', '.join(flags)} GIGACHAD"
             )
-        self.last_sent = (datetime.now(), msg.nick)
+        self.last_sent = (datetime.now(), nick)
         return flags
 
-    def pre_response_check(self, msg: Message) -> bool:
-        if self.is_command(msg):
+    def pre_response_check(self, nick: str, data: str) -> bool:
+        if data.startswith(self.prefix):
             logger.info("Check fail: Name and command used at the same time")
             return False
         if self.convo[-1]["role"] == "user":
             logger.info("Check fail: Still waiting on the last completion")
             return False
-        if self.is_admin(msg):
-            if self.respond_with_flags(msg):
+        if nick in self.gpt_config["admins"]:
+            if self.respond_with_flags(nick, data):
                 logger.info(f"Check fail: Admin prompt was flagged")
                 return False
             logger.info("Check pass: Admin requested")
@@ -84,121 +84,121 @@ class DGGPTBot(DGGBot):
             remaining = self.cooldown - last_sent_delta
             logger.info(f"Check fail: On cooldown for another {remaining}s")
             return False
-        if msg.nick in self.gpt_config["blacklist"]:
-            logger.info(f"Check fail: {msg.nick} is blacklisted")
+        if nick in self.gpt_config["blacklist"]:
+            logger.info(f"Check fail: {nick} is blacklisted")
             return False
-        if self.respond_with_flags(msg):
+        if self.respond_with_flags(nick, data):
             logger.info(f"Check fail: Prompt was flagged")
             return False
         logger.info("Check pass")
         return True
 
-    def respond_to_mention(self, msg: Message):
-        logger.debug(f"Bot was mentioned:\n  {msg.nick}: {msg.data}")
-        if not self.pre_response_check(msg):
+    def respond_to_mention(self, nick: str, data: str):
+        logger.debug(f"Bot was mentioned:\n  {nick}: {data}")
+        if not self.pre_response_check(nick, data):
             return
-        self.last_sent = (datetime.now(), msg.nick)
+        self.last_sent = (datetime.now(), nick)
         self.convo = trim_tokens(self.convo, self.max_tokens)
-        generate_response(msg, self.convo)
-        formatted = format_dgg_message(self.convo[-1]["content"], msg.nick)
+        generate_response(nick, data, self.convo)
+        formatted = format_dgg_message(self.convo[-1]["content"], nick)
         if will_trigger_bot_filter(formatted, self.message_history):
             delete_last_prompt(self.convo)
             logger.info("Filter check failed, response cancelled")
             return
         logger.info("Sending response")
-        msg.reply(formatted)
+        self.send(formatted)
 
-    def send_cost(self, msg: Message):
-        logger.info(f"{msg.nick} used !cost")
+    def send_cost(self):
+        logger.info(f"!cost was called")
         cost = get_cost_from_tokens()
         logger.info(f"Sending cost ({cost})")
-        msg.reply(f"tena has lost ${cost} this month LULW")
+        self.send(f"tena has lost ${cost} this month LULW")
 
-    def send_summary(self, msg: Message, nick1: str, nick2: str, amount: str | int):
-        logger.info(f"{msg.nick} used !summarize on {nick1} & {nick2}")
-        self.last_sent = (datetime.now(), msg.nick)
+    def send_summary(self, user1: str, user2: str, amount: str | int):
+        logger.info(f"!summarize was used on {user1} & {user2}")
+        self.last_sent = (datetime.now(), "")
         self.summaries = list(BASE_SUMMARY)
-        debate = request_debate(nick1, nick2, amount)
+        debate = request_debate(user1, user2, amount)
         if isinstance(debate, str):
-            msg.reply(debate)
+            self.send(debate)
             return
         generate_summary("\n".join(debate), self.summaries)
         logger.info("Sending summary")
-        msg.reply(self.summaries[-1]["content"])
+        self.send(self.summaries[-1]["content"])
 
-    def send_solution(self, msg: Message):
-        logger.info(f"{msg.nick} used !solve")
+    def send_solution(self):
+        logger.info("!solve was called")
         if self.summaries == list(BASE_SUMMARY):
-            logger.info(f"No summary stored, response cancelled")
-            msg.reply("I don't have a summary stored MMMM")
+            logger.info("No summary stored, response cancelled")
+            self.send("I don't have a summary stored MMMM")
             return
-        self.last_sent = (datetime.now(), msg.nick)
         generate_solution(self.summaries)
+        self.last_sent = (datetime.now(), "")
         logger.info("Sending solution")
-        msg.reply(self.summaries[-1]["content"])
+        self.send(self.summaries[-1]["content"])
         self.summaries = list(BASE_SUMMARY)
 
-    def clear_caches(self, msg: Message):
-        logger.info(f"{msg.nick} used !clearcache")
+    def clear_caches(self):
+        logger.info("!clearcache was called")
         request_phrases.cache_clear()
         request_emotes.cache_clear()
         logger.info(f"Cleared caches for request_phrases & request_emotes")
-        msg.reply(f"{msg.nick} PepOk cleared caches")
+        self.send("PepOk cleared caches")
 
-    def clear_convo(self, msg: Message):
-        logger.info(f"{msg.nick} used !wipe")
+    def clear_convo(self):
+        logger.info("!wipe was called")
         self.convo = list(BASE_CONVO)
         logger.info(f"Convo wiped, tokens at {count_tokens(self.convo)}")
-        msg.reply(f"{msg.nick} PepOk wiped my memory FeelsDankMan")
+        self.send("PepOk wiped my memory FeelsDankMan")
 
-    def clear_last_prompt(self, msg: Message):
-        logger.info(f"{msg.nick} used !wipelast")
+    def clear_last_prompt(self):
+        logger.info("!wipelast was called")
         delete_last_prompt(self.convo)
-        msg.reply(f"{msg.nick} PepOk deleted the last prompt")
+        self.send(f"PepOk deleted the last prompt")
 
-    def blacklist_add(self, msg: Message, name: str):
-        logger.info(f"{msg.nick} used !bla")
+    def blacklist_add(self, name: str):
+        logger.info(f"!bla was used on {name}")
         if name not in self.gpt_config["blacklist"]:
             self.gpt_config["blacklist"].append(name)
         save_config(self.gpt_config)
         logger.info(f'"{name}" was added to the blacklist')
-        msg.reply(f"{msg.nick} PepOk {name} blacklisted")
+        self.send(f"PepOk {name} blacklisted")
 
-    def blacklist_remove(self, msg: Message, name: str):
-        logger.info(f"{msg.nick} used !blr")
+    def blacklist_remove(self, name: str):
+        logger.info(f"!blr was used on {name}")
         if name in self.gpt_config["blacklist"]:
             self.gpt_config["blacklist"].remove(name)
         save_config(self.gpt_config)
         logger.info(f'"{name}" was removed from the blacklist')
-        msg.reply(f"{msg.nick} PepOk {name} unblacklisted")
+        self.send(f"PepOk {name} unblacklisted")
 
-    def change_cooldown(self, msg: Message, seconds: str):
-        logger.info(f"{msg.nick} used !cd")
+    def change_cooldown(self, seconds: str):
+        logger.info("!cd was used")
         try:
             self.cooldown = int(seconds)
         except ValueError:
             logger.info(f"Cooldown wasn't an integer")
-            msg.reply(f"{msg.nick} that's not an integer MMMM")
+            self.send("that's not an integer MMMM")
             return
         logger.info(f"Cooldown changed to {self.cooldown}s")
-        msg.reply(f"{msg.nick} PepOk changed the cooldown to {self.cooldown}s")
+        self.send(f"PepOk changed the cooldown to {self.cooldown}s")
 
-    def change_token_limit(self, msg: Message, limit: str):
-        logger.info(f"{msg.nick} used !maxtokens")
+    def change_token_limit(self, limit: str):
+        logger.info("!maxtokens was used")
         try:
             limit = int(limit)
         except ValueError:
             logger.info(f"Token amount wasn't an integer")
-            msg.reply(f"{msg.nick} that's not an integer MMMM")
+            self.send("that's not an integer MMMM")
             return
         base_tokens = count_tokens(list(BASE_CONVO))
         if limit > 3996 or limit < base_tokens:
             logger.info(f"Token amount was outside the limits")
-            msg.reply(f"{msg.nick} limit must be between {base_tokens} and 3996 MMMM")
+            self.send(f"token limit must be between {base_tokens} and 3996 MMMM")
             return
         self.max_tokens = limit
-        logger.info(f"Max tokens changed to {self.max_tokens}s")
-        msg.reply(f"{msg.nick} PepOk changed the max tokens to {self.max_tokens}")
+        logger.info(f"Max tokens changed to {self.max_tokens}")
+        self.send(f"PepOk changed the max tokens to {self.max_tokens}")
 
     def start_quickdraw(self):
         logger.info("Starting quickdraw")
@@ -207,25 +207,27 @@ class DGGPTBot(DGGBot):
         self.quickdraw["time_started"] = datetime.now()
         return
 
-    def end_quickdraw(self, msg: Message):
-        logger.info(f"Quickdraw ended by {msg.nick}")
+    def end_quickdraw(self, nick: str, data: str):
+        logger.info(f"Quickdraw ended by {nick}")
         self.quickdraw["waiting"] = False
         delta = datetime.now() - self.quickdraw["time_started"]
         response_time = round(delta.total_seconds(), 2)
-        ending_message = f"{msg.data} {msg.nick} shot first! Response time: {response_time} seconds. "
+        ending_message = (
+            f"{data} {nick} shot first! Response time: {response_time} seconds. "
+        )
         if response_time < self.quickdraw["record"]["time"]:
             ending_message += "New record!"
             self.quickdraw["record"]["time"] = response_time
-            self.quickdraw["record"]["holder"] = msg.nick
+            self.quickdraw["record"]["holder"] = nick
             write_qd_record(self.quickdraw["record"])
         else:
             ending_message += f'Record time: {self.quickdraw["record"]["time"]} by {self.quickdraw["record"]["holder"]}'
         self.send(ending_message)
 
-    def send_charity_info(self, msg: Message):
-        logger.info(f"{msg.nick} used !malaria")
+    def send_charity_info(self):
+        logger.info(f"!malaria was called")
         charity_info = request_charity_info()
-        msg.reply(
+        self.send(
             f'Total raised: ${charity_info["amount_raised"]} dggL '
             + f'Last donor: {charity_info["last_donor"]["name"]} dggL '
             + f'Amount: {charity_info["last_donor"]["amount"]} dggL '
