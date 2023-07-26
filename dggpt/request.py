@@ -4,12 +4,18 @@ from functools import cache
 from datetime import datetime
 import re
 import requests
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
 LOG_LINK = "https://api-v2.rustlesearch.dev/anon/search"
 PHRASE_LINK = "https://vyneer.me/tools/phrases?ts=1"
 EMOTE_LINK = "https://tena.dev/api/emotes"
+
+CHARITY_LINK = "https://www.againstmalaria.com/Fundraiser.aspx?FundraiserID=8960"
+DONOR_TABLE_ID = "MainContent_UcFundraiserSponsors1_grdDonors"
+TOTALS_ID = "MainContent_pnlTotals"
+GRAND_TOTAL_ID = "MainContent_lblGrandTotal"
 
 
 @cache
@@ -72,3 +78,22 @@ def request_debate(
         i += 1
     logger.info(f"{amount} messages loaded from rustlesearch.dev")
     return debate
+
+
+def request_charity_info() -> dict:
+    charity_details = {
+        "amount_raised": "",
+        "last_donor": {"name": "", "comment": "", "amount": ""},
+    }
+    charity_soup = BeautifulSoup(requests.get(CHARITY_LINK).text, "html.parser")
+    totals = charity_soup.find("div", id=TOTALS_ID)
+    charity_details["amount_raised"] = totals.find("span", id=GRAND_TOTAL_ID).text
+
+    donor_table = charity_soup.find("table", id=DONOR_TABLE_ID)
+    rows = donor_table.find_all("tr")
+    cols = [d.text for d in rows[1].find_all("td")]
+    charity_details["last_donor"]["name"] = cols[1].strip()
+    charity_details["last_donor"]["amount"] = cols[4].strip()
+    charity_details["last_donor"]["comment"] = cols[7].strip()
+
+    return charity_details

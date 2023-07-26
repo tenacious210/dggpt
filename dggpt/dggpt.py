@@ -16,7 +16,12 @@ from .gpt.tokens import get_cost_from_tokens, count_tokens
 from .gpt.moderation import flag_check
 from .dgg import format_dgg_message, will_trigger_bot_filter
 from .dgg.moderation import SPAM_SEARCH_AMOUNT
-from .request import request_debate, request_emotes, request_phrases
+from .request import (
+    request_debate,
+    request_emotes,
+    request_phrases,
+    request_charity_info,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +43,7 @@ class DGGPTBot(DGGBot):
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 30
         self.max_tokens = 1400
+        self.max_resp_tokens = 65
         self.quickdraw = {
             "waiting": False,
             "time_started": datetime.now(),
@@ -215,3 +221,14 @@ class DGGPTBot(DGGBot):
         else:
             ending_message += f'Record time: {self.quickdraw["record"]["time"]} by {self.quickdraw["record"]["holder"]}'
         self.send(ending_message)
+
+    def send_charity_info(self, msg: Message):
+        logger.info(f"{msg.nick} used !malaria")
+        charity_info = request_charity_info()
+        msg.reply(
+            f'Total raised: ${charity_info["amount_raised"]} dggL '
+            + f'Last donor: {charity_info["last_donor"]["name"]} dggL '
+            + f'Amount: {charity_info["last_donor"]["amount"]} dggL '
+            + f'Comment: {charity_info["last_donor"]["comment"]} dggL '
+            + "www.againstmalaria.com/destiny"
+        )

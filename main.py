@@ -88,5 +88,11 @@ def quickdraw(msg: Message):
     bot.start_quickdraw()
 
 
+@bot.check(bot.is_admin)
+@bot.command()
+def malaria(msg: Message):
+    bot.send_charity_info(msg)
+
+
 if __name__ == "__main__":
     bot.run_forever()
