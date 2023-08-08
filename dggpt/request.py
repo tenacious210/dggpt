@@ -1,13 +1,15 @@
 # Handles all requests that use the requests module
 import logging
 from functools import cache
-from datetime import datetime
+from datetime import datetime, timedelta
+from urllib.parse import quote
 import re
 import requests
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
+RUSTLE_LINK = "rustlesearch.dev/"
 LOG_LINK = "https://api-v2.rustlesearch.dev/anon/search"
 PHRASE_LINK = "https://vyneer.me/tools/phrases?ts=1"
 EMOTE_LINK = "https://tena.dev/api/emotes"
@@ -16,6 +18,24 @@ CHARITY_LINK = "https://www.againstmalaria.com/Fundraiser.aspx?FundraiserID=8960
 DONOR_TABLE_ID = "MainContent_UcFundraiserSponsors1_grdDonors"
 TOTALS_ID = "MainContent_pnlTotals"
 GRAND_TOTAL_ID = "MainContent_lblGrandTotal"
+
+
+def _format_delta(delta: timedelta) -> str:
+    if years := delta.days // 365:
+        unit, amount = "year", years
+    elif months := delta.days // 30:
+        unit, amount = "month", months
+    elif days := delta.days % 30:
+        unit, amount = "day", days
+    elif hours := delta.seconds // 3600:
+        unit, amount = "hour", hours
+    elif minutes := delta.seconds // 60:
+        unit, amount = "minute", minutes
+    elif seconds := delta.seconds % 60:
+        unit, amount = "second", seconds
+    if amount > 1:
+        unit += "s"
+    return f"{amount} {unit}"
 
 
 @cache
@@ -97,3 +117,26 @@ def request_charity_info() -> dict:
     charity_details["last_donor"]["comment"] = cols[7].strip()
 
     return charity_details
+
+
+def request_logs(user: str, term: str = None) -> dict:
+    log_info = {"log_link": "", "last_seen": None, "hits": None}
+    query = f"?channel=Destinygg&username={user}"
+    if term:
+        query += f"&text={quote(term)}"
+    logs = requests.get(LOG_LINK + query).json()
+    if logs["error"]:
+        raise Exception(f"Error from rustlesearch: {logs['error']}")
+    messages = logs["data"]["messages"]
+    log_info["log_link"] = RUSTLE_LINK + query
+    if term:
+        message_num = len(messages)
+        log_info["hits"] = str(message_num)
+        if message_num >= 100:
+            log_info["hits"] += "+"
+    else:
+        last_seen_str = messages[0]["ts"]
+        last_seen = datetime.strptime(last_seen_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+        seen_delta = datetime.utcnow() - last_seen
+        log_info["last_seen"] = _format_delta(seen_delta)
+    return log_info

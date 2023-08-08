@@ -10,7 +10,12 @@ user_message: dict = lambda name, data: {"name": name, "role": "user", "content"
 summary_message: dict = lambda data: {"role": "user", "content": data}
 
 
-def generate_response(nick: str, data: str, convo: list[dict]) -> list[dict]:
+def generate_response(
+    nick: str,
+    data: str,
+    convo: list[dict],
+    max_tokens: int,
+) -> list[dict]:
     """
     Gets a chat completion from openai for a DGG message
     Takes in an openai convo, returns the new openai convo
@@ -18,7 +23,7 @@ def generate_response(nick: str, data: str, convo: list[dict]) -> list[dict]:
     """
     logger.info("Getting chat response...")
     convo.append(user_message(nick, data))
-    return chat_completion(convo)
+    return chat_completion(convo, max_tokens)
 
 
 def generate_summary(debate: str, convo: list[dict]) -> list[dict]:

@@ -7,7 +7,6 @@ from dggpt.config import OPENAI_KEY, add_monthly_tokens
 logger = logging.getLogger(__name__)
 
 CHAT_MODEL = "gpt-3.5-turbo"
-MAX_TOKENS = 100
 
 openai.api_key = OPENAI_KEY
 
@@ -29,20 +28,22 @@ def moderation_completion(message: str) -> list[str]:
             + f'\n  Input: "{message}"'
             + f'\n  Flags: {", ".join(flags)}'
         )
+    if "harassment" in flags:
+        flags.remove("harassment")
     return flags
 
 
-def chat_completion(convo: list[dict]) -> list[dict]:
+def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
     """
     Gets a chat completion from openai.
     Takes in an openai convo, returns the updated convo.
     """
 
-    logger.info(f"Sending chat request...\n  Input: {convo[-1]}")
+    logger.debug(f"Sending chat request...\n  Input: {convo[-1]}")
     try:
         rsp = openai.ChatCompletion.create(
             model=CHAT_MODEL,
-            max_tokens=MAX_TOKENS,
+            max_tokens=max_tokens,
             messages=convo,
         )
     except (RateLimitError, APIError, ServiceUnavailableError) as openai_error:
@@ -55,6 +56,6 @@ def chat_completion(convo: list[dict]) -> list[dict]:
         return convo
     message = dict(rsp["choices"][0]["message"])
     convo.append(message)
-    logger.info(f"Chat completion recieved\n  Output: {message}")
+    logger.debug(f"Chat completion recieved\n  Output: {message}")
     add_monthly_tokens(rsp["usage"]["total_tokens"])
     return convo

@@ -1,9 +1,9 @@
 import os
 import logging
-from dggbot import Message
+from dggbot import Message, PrivateMessage
 from dggpt import DGGPTBot
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 logging.getLogger("websocket").setLevel("CRITICAL")
 for logger_name in ("dgg-bot", "openai", "urllib3"):
     logging.getLogger(logger_name).setLevel("INFO")
@@ -18,9 +18,12 @@ def on_mention(msg: Message):
 
 @bot.event()
 def on_msg(msg: Message):
-    bot.update_history(msg.data)
-    if bot.quickdraw["waiting"] and (msg.data == "YEEHAW" or msg.data == "PARDNER"):
-        bot.end_quickdraw(msg.nick, msg.data)
+    bot.process_msg(msg.nick, msg.data)
+
+
+@bot.command(cooldown=30)
+def search(msg: Message, user: str, term: str = None):
+    bot.send_logs(user, term)
 
 
 @bot.command(cooldown=30)
@@ -55,6 +58,8 @@ def clearcache(msg: Message):
 @bot.command()
 def wipe(msg: Message):
     bot.clear_convo()
+    if isinstance(msg, PrivateMessage):
+        msg.reply("PepOk")
 
 
 @bot.check(bot.is_admin)
@@ -79,6 +84,12 @@ def blr(msg: Message, name: str, *_):
 @bot.command()
 def cd(msg: Message, seconds: str, *_):
     bot.change_cooldown(seconds)
+
+
+@bot.check(bot.is_admin)
+@bot.command()
+def maxresp(msg: Message, limit: str, *_):
+    bot.change_resp_token_limit(limit)
 
 
 @bot.check(bot.is_admin)
