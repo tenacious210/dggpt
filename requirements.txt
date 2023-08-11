@@ -1,6 +1,6 @@
 openai==0.27.8
 tiktoken==0.4.0
-dgg-bot==0.15.0
+dgg-bot==1.2.2
 requests==2.31.0
 jsonschema==4.17.3
 Levenshtein==0.21.1
