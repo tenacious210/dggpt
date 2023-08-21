@@ -203,7 +203,7 @@ class DGGPTBot(DGGBot):
 
     def change_cooldown(self, seconds: str):
         logger.info("!cd was used")
-        seconds = self._convert_to_int(seconds)
+        self.cooldown = self._convert_to_int(seconds)
         self.send(f"PepOk changed the cooldown to {self.cooldown}s")
 
     def change_token_limit(self, limit: str):
