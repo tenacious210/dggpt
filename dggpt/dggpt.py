@@ -88,7 +88,11 @@ class DGGPTBot(DGGBot):
         self.message_history.append(data)
         if self.quickdraw["waiting"] and (data == "YEEHAW" or data == "PARDNER"):
             self.end_quickdraw(nick, data)
-        if ">" in data and "next chatter" in data.lower() and not self.check_cooldown():
+        if (
+            data.startswith(">")
+            and "next chatter" in data.lower()
+            and not self.check_cooldown()
+        ):
             self.send(choice(responses))
             self.last_sent = datetime.now()
 
@@ -135,8 +139,9 @@ class DGGPTBot(DGGBot):
         generate_response(nick, data, self.convo, self.max_resp_tokens)
         formatted = format_dgg_message(self.convo[-1]["content"], nick)
         if will_trigger_bot_filter(formatted, self.message_history):
+            logger.info("Filter check failed")
+            self.send("nah, I don't feel like it MMMM")
             delete_last_prompt(self.convo)
-            logger.info("Filter check failed, response cancelled")
             return
         self.send(formatted)
 
@@ -255,7 +260,7 @@ class DGGPTBot(DGGBot):
             + "www.againstmalaria.com/destiny"
         )
         if will_trigger_bot_filter(response, self.message_history):
-            self.send("the message was invalid MMMM")
+            self.send("nah, I don't feel like it MMMM")
             return
         self.send(response)
 

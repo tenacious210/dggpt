@@ -62,7 +62,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
         if len(message) < 100:
             return False
         for old_message in message_history:
-            if similarity(message.lower().strip(), old_message.lower().strip()) > 1.50:
+            if similarity(message.lower().strip(), old_message.lower().strip()) > 0.9:
                 logger.info(
                     "Failed similarity test:"
                     + f'\n  Input message: "{message}"'
