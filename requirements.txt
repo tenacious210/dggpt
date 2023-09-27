@@ -1,4 +1,4 @@
-openai==0.28.0
+openai==0.28.1
 tiktoken==0.5.1
 dgg-bot==1.4.0
 requests==2.31.0
