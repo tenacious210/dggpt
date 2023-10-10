@@ -3,5 +3,5 @@ tiktoken==0.5.1
 dgg-bot==1.4.0
 requests==2.31.0
 jsonschema==4.19.1
-Levenshtein==0.22.0
+Levenshtein==0.23.0
 beautifulsoup4==4.12.2
