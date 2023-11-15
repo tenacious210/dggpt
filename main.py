@@ -1,3 +1,15 @@
+### Monkey patches
+import re
+from dggbot.user import User
+
+
+def _name_regex(self) -> re.Pattern:
+    return re.compile(rf"\b{self.name}\b", re.IGNORECASE)
+
+
+User._name_regex = _name_regex
+###
+
 import os
 import logging
 from dggbot import Message, PrivateMessage
@@ -21,6 +33,11 @@ def on_msg(msg: Message):
     bot.process_msg(msg.nick, msg.data)
 
 
+@bot.event()
+def on_privmsg(msg: Message):
+    bot.process_privmsg(msg.nick, msg.data)
+
+
 @bot.command(cooldown=30)
 def search(msg: Message, user: str, term: str = None):
     bot.send_logs(user, term)
@@ -34,6 +51,12 @@ def cost(msg: Message):
 @bot.command(cooldown=120)
 def malaria(msg: Message):
     bot.send_charity_info()
+
+
+@bot.check(bot.is_admin)
+@bot.command(["send", "s"])
+def repeat(msg: Message):
+    bot.repeat(msg.data)
 
 
 @bot.check(bot.is_admin)
@@ -58,8 +81,6 @@ def clearcache(msg: Message):
 @bot.command()
 def wipe(msg: Message):
     bot.clear_convo()
-    if isinstance(msg, PrivateMessage):
-        msg.reply("PepOk")
 
 
 @bot.check(bot.is_admin)
@@ -102,6 +123,12 @@ def maxtokens(msg: Message, limit: str, *_):
 @bot.command()
 def quickdraw(msg: Message):
     bot.start_quickdraw()
+
+
+@bot.check(bot.is_admin)
+@bot.command()
+def simonsays(msg: Message):
+    bot.start_simonsays()
 
 
 if __name__ == "__main__":

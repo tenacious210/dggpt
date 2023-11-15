@@ -1,4 +1,5 @@
 import logging
+from threading import Thread
 from collections import deque
 from random import choice
 from datetime import datetime, timedelta
@@ -42,8 +43,13 @@ class DGGPTBot(DGGBot):
         self.summaries: list[dict] = list(BASE_SUMMARY)
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 30
-        self.max_tokens = 1400
+        self.max_tokens = 1500
         self.max_resp_tokens = 65
+        self.simonsays = {
+            "emote": None,
+            "winners": [],
+            "time_started": datetime.now(),
+        }
         self.quickdraw = {
             "waiting": False,
             "time_started": datetime.now(),
@@ -75,19 +81,29 @@ class DGGPTBot(DGGBot):
     def is_admin(self, msg: Message) -> bool:
         return msg.nick in self.gpt_config["admins"]
 
+    def process_privmsg(self, nick: str, data: str):
+        logger.info(f"Got whispered: {nick}: {data}")
+        if nick in self.gpt_config["admins"]:
+            self.respond_to_mention(nick, data)
+            sleep(1)
+            self.send_privmsg(nick, "Done PepOk")
+
     def process_msg(self, nick: str, data: str):
         responses = (
             "me",
-            "yup, that's me...",
             "I can't even deny it, that's me LULW",
             "me tbh...",
             "LITERALLY ME LULW",
-            "me PepoTurkey",
-            "me? hmmm.. yup, that's me",
+            "no u",
+            "no u!",
+            "no u WEOW",
+            f"no u {nick}",
         )
         self.message_history.append(data)
         if self.quickdraw["waiting"] and (data == "YEEHAW" or data == "PARDNER"):
             self.end_quickdraw(nick, data)
+        if self.simonsays["emote"] and data == self.simonsays["emote"]:
+            self.end_simonsays(nick)
         if (
             data.startswith(">")
             and "next chatter" in data.lower()
@@ -98,10 +114,16 @@ class DGGPTBot(DGGBot):
 
     def respond_with_flags(self, nick: str, data: str):
         if flags := flag_check(data, raise_error=False):
-            self.send(
+            response = (
                 f"{nick} Congrats, your prompt was flagged"
                 + f" by openai for: {', '.join(flags)} GIGACHAD"
             )
+            if "sexual/minors" in response:
+                response = response.replace("GIGACHAD", "HUH")
+            if will_trigger_bot_filter(response, self.message_history):
+                self.send("nah, I don't feel like it MMMM")
+            else:
+                self.send(response)
         self.last_sent = datetime.now()
         return flags
 
@@ -144,6 +166,10 @@ class DGGPTBot(DGGBot):
             delete_last_prompt(self.convo)
             return
         self.send(formatted)
+
+    def repeat(self, data: str):
+        self.send(data.split(maxsplit=1)[1])
+        self.last_sent = datetime.now()
 
     def send_cost(self):
         logger.info(f"!cost was called")
@@ -248,6 +274,35 @@ class DGGPTBot(DGGBot):
         else:
             ending_message += f'Record time: {self.quickdraw["record"]["time"]} by {self.quickdraw["record"]["holder"]}'
         self.send(ending_message)
+
+    def simonsays_thread(self):
+        emotes = request_emotes()
+        i = 0
+        while i < 4:
+            self.simonsays["emote"] = choice(emotes)
+            self.send(f"> Simon says... {self.simonsays['emote']}")
+            self.simonsays["time_started"] = datetime.now()
+            self.last_sent = datetime.now()
+            while self.simonsays["emote"] != None:
+                sleep(0.5)
+            i += 1
+            sleep(5)
+        winners = " ".join(set(self.simonsays["winners"]))
+        self.send(f"{winners} Klappa ")
+        self.simonsays["winners"] = []
+
+    def start_simonsays(self):
+        logger.info("Starting simon says")
+        Thread(target=self.simonsays_thread).start()
+
+    def end_simonsays(self, nick: str):
+        logger.info(f"Simon says ended by {nick}")
+        delta = datetime.now() - self.simonsays["time_started"]
+        response_time = round(delta.total_seconds() * 1000)
+        self.send(f"{nick} got it in {response_time} ms Klappa")
+        self.last_sent = datetime.now()
+        self.simonsays["emote"] = None
+        self.simonsays["winners"].append(nick)
 
     def send_charity_info(self):
         logger.info(f"!malaria was called")
