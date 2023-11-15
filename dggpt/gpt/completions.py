@@ -1,14 +1,45 @@
 # Handles all requests to openai
 import logging
-import openai
-from openai.error import RateLimitError, APIError, ServiceUnavailableError
+from openai import OpenAI
+from openai import (
+    OpenAI,
+    RateLimitError,
+    APIError,
+    APIStatusError,
+    BadRequestError,
+    APITimeoutError,
+    APIConnectionError,
+    InternalServerError,
+    NotFoundError,
+    ConflictError,
+    AuthenticationError,
+    PermissionDeniedError,
+    UnprocessableEntityError,
+    APIResponseValidationError,
+)
+
+openai_errors = (
+    RateLimitError,
+    APIError,
+    APIStatusError,
+    BadRequestError,
+    APITimeoutError,
+    APIConnectionError,
+    InternalServerError,
+    NotFoundError,
+    ConflictError,
+    AuthenticationError,
+    PermissionDeniedError,
+    UnprocessableEntityError,
+    APIResponseValidationError,
+)
 from dggpt.config import OPENAI_KEY, add_monthly_tokens
+
+client = OpenAI(api_key=OPENAI_KEY, timeout=20, max_retries=0)
 
 logger = logging.getLogger(__name__)
 
 CHAT_MODEL = "gpt-3.5-turbo"
-
-openai.api_key = OPENAI_KEY
 
 
 def moderation_completion(message: str) -> list[str]:
@@ -18,10 +49,10 @@ def moderation_completion(message: str) -> list[str]:
     """
     flags = []
     logger.debug("Sending moderation request...")
-    mod = openai.Moderation.create(input=message)
-    for category in mod["results"][0]["categories"]:
-        if mod["results"][0]["categories"][category]:
-            flags.append(category)
+    mod = client.moderations.create(input=message)
+    for category in mod.results[0].categories:
+        if category[1]:
+            flags.append(category[0])
     if flags:
         logger.info(
             f"Moderation flags triggered:"
@@ -41,12 +72,12 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
 
     logger.debug(f"Sending chat request...\n  Input: {convo[-1]}")
     try:
-        rsp = openai.ChatCompletion.create(
+        rsp = client.chat.completions.create(
             model=CHAT_MODEL,
             max_tokens=max_tokens,
             messages=convo,
         )
-    except (RateLimitError, APIError, ServiceUnavailableError) as openai_error:
+    except openai_errors as openai_error:
         error_name = type(openai_error).__name__
         error_message = (
             f"sorry, I got a {error_name} from openai FeelsDankMan try again later"
@@ -54,8 +85,8 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
         logger.info("Got an openai error.")
         convo.append({"role": "assistant", "content": error_message})
         return convo
-    message = dict(rsp["choices"][0]["message"])
-    convo.append(message)
+    message = dict(rsp.choices[0].message)
+    convo.append({"role": "assistant", "content": message["content"]})
     logger.debug(f"Chat completion recieved\n  Output: {message}")
-    add_monthly_tokens(rsp["usage"]["total_tokens"])
+    add_monthly_tokens(rsp.usage.total_tokens)
     return convo

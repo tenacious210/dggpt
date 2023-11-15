@@ -1,6 +1,7 @@
 __pycache__
 .DS_Store
 .vscode
+misc
 config.json
 monthly_tokens.json
 quickdraw_record.json
