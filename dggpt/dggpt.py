@@ -174,7 +174,8 @@ class DGGPTBot(DGGBot):
     def send_cost(self):
         logger.info(f"!cost was called")
         cost = get_cost_from_tokens()
-        self.send(f"tena has lost ${cost} this month LULW")
+        dollars = "{:,.2f}".format(cost)
+        self.send(f"tena has lost ${dollars} this month LULW")
 
     def send_summary(self, user1: str, user2: str, amount: str | int):
         logger.info(f"!summarize was used on {user1} & {user2}")
