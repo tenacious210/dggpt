@@ -4,4 +4,4 @@ dgg-bot==1.4.0
 requests==2.31.0
 jsonschema==4.19.2
 Levenshtein==0.23.0
-beautifulsoup4==4.12.2
+beautifulsoup4==4.12.3
