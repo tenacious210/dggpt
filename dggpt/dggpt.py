@@ -1,6 +1,6 @@
 import logging
 from threading import Thread
-from collections import deque
+from collections import deque, Counter
 from random import choice
 from datetime import datetime, timedelta
 from time import sleep
@@ -13,7 +13,7 @@ from .config import (
     read_qd_record,
     write_qd_record,
 )
-from .gpt import generate_response, generate_summary, generate_solution
+from .gpt import generate_response, generate_summary, generate_solution, generate_image
 from .gpt.convo import delete_last_prompt, trim_tokens
 from .gpt.tokens import get_cost_from_tokens, count_tokens
 from .gpt.moderation import flag_check
@@ -23,8 +23,8 @@ from .request import (
     request_debate,
     request_emotes,
     request_phrases,
-    request_charity_info,
     request_logs,
+    request_latest_log,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,20 +85,10 @@ class DGGPTBot(DGGBot):
         logger.info(f"Got whispered: {nick}: {data}")
         if nick in self.gpt_config["admins"]:
             self.respond_to_mention(nick, data)
-            sleep(1)
-            self.send_privmsg(nick, "Done PepOk")
+            sleep(3)
+            self.send_privmsg(nick, "PepOk")
 
     def process_msg(self, nick: str, data: str):
-        responses = (
-            "me",
-            "I can't even deny it, that's me LULW",
-            "me tbh...",
-            "LITERALLY ME LULW",
-            "no u",
-            "no u!",
-            "no u WEOW",
-            f"no u {nick}",
-        )
         self.message_history.append(data)
         if self.quickdraw["waiting"] and (data == "YEEHAW" or data == "PARDNER"):
             self.end_quickdraw(nick, data)
@@ -109,6 +99,16 @@ class DGGPTBot(DGGBot):
             and "next chatter" in data.lower()
             and not self.check_cooldown()
         ):
+            responses = (
+                "me",
+                "I can't even deny it, that's me LULW",
+                "me tbh...",
+                "LITERALLY ME LULW",
+                "no u",
+                "no u!",
+                "no u WEOW",
+                f"no u {nick}",
+            )
             self.send(choice(responses))
             self.last_sent = datetime.now()
 
@@ -121,7 +121,7 @@ class DGGPTBot(DGGBot):
             if "sexual/minors" in response:
                 response = response.replace("GIGACHAD", "HUH")
             if will_trigger_bot_filter(response, self.message_history):
-                self.send("nah, I don't feel like it MMMM")
+                self.send_filter_response(nick)
             else:
                 self.send(response)
         self.last_sent = datetime.now()
@@ -152,6 +152,15 @@ class DGGPTBot(DGGBot):
         logger.info("Check pass")
         return True
 
+    def send_filter_response(self, user: str):
+        responses = (
+            f"{user} nah, I don't feel like it MMMM",
+            f"/me ignores {user}'s request TF",
+            f"/me stares intensely at {user} Stare",
+        )
+        self.send(choice(responses))
+        return
+
     def respond_to_mention(self, nick: str, data: str):
         logger.debug(f"Bot was mentioned:\n  {nick}: {data}")
         if not self.pre_response_check(nick, data):
@@ -162,7 +171,23 @@ class DGGPTBot(DGGBot):
         formatted = format_dgg_message(self.convo[-1]["content"], nick)
         if will_trigger_bot_filter(formatted, self.message_history):
             logger.info("Filter check failed")
-            self.send("nah, I don't feel like it MMMM")
+            self.send_filter_response(nick)
+            delete_last_prompt(self.convo)
+            return
+        self.send(formatted)
+
+    def respond_to_log(self, nick: str):
+        logger.debug("!respond was called")
+        log_info = request_latest_log(nick)
+        self.last_sent = datetime.now()
+        self.convo = trim_tokens(self.convo, self.max_tokens)
+        generate_response(nick, log_info["text"], self.convo, self.max_resp_tokens)
+        formatted = format_dgg_message(self.convo[-1]["content"], nick)
+        if nick.lower() not in formatted.lower():
+            formatted = f"{nick} {formatted}"
+        if will_trigger_bot_filter(formatted, self.message_history):
+            logger.info("Filter check failed")
+            self.send_filter_response(nick)
             delete_last_prompt(self.convo)
             return
         self.send(formatted)
@@ -288,8 +313,9 @@ class DGGPTBot(DGGBot):
                 sleep(0.5)
             i += 1
             sleep(5)
-        winners = " ".join(set(self.simonsays["winners"]))
-        self.send(f"{winners} Klappa ")
+        winners = Counter(self.simonsays["winners"]).most_common()
+        winners_list = [f"{name}: {count}" for name, count in winners]
+        self.send("Final scores Klappa " + ", ".join(winners_list))
         self.simonsays["winners"] = []
 
     def start_simonsays(self):
@@ -305,28 +331,16 @@ class DGGPTBot(DGGBot):
         self.simonsays["emote"] = None
         self.simonsays["winners"].append(nick)
 
-    def send_charity_info(self):
-        logger.info(f"!malaria was called")
-        charity_info = request_charity_info()
-        response = (
-            f'Total raised: ${charity_info["amount_raised"]} dggL '
-            + f'Last donor: {charity_info["last_donor"]["name"]} dggL '
-            + f'Amount: {charity_info["last_donor"]["amount"]} dggL '
-            + f'Comment: {charity_info["last_donor"]["comment"]} dggL '
-            + "www.againstmalaria.com/destiny"
-        )
-        if will_trigger_bot_filter(response, self.message_history):
-            self.send("nah, I don't feel like it MMMM")
-            return
-        self.send(response)
-
-    def send_logs(self, user: str, term: str = None):
-        log_info = request_logs(user, term)
-        if term:
-            response = f'Results: {log_info["hits"]} {log_info["log_link"]}'
+    def spam_check(self, nick: str, data: str):
+        if will_trigger_bot_filter(data, self.message_history):
+            self.send_privmsg(nick, "This will get you muted MMMM")
         else:
-            response = f'Last seen {log_info["last_seen"]} ago {log_info["log_link"]}'
-        if will_trigger_bot_filter(response, self.message_history):
-            self.send("nah, I don't feel like it MMMM")
-            return
-        self.send(response)
+            self.send_privmsg(nick, "This is safe to post MMMM")
+
+    def send_coinflip(self):
+        self.send(f"You got {choice(['heads', 'tails'])}")
+
+    def send_image(self, prompt):
+        logger.info(f"!image was used with prompt: {prompt}")
+        self.last_sent = datetime.now()
+        self.send(f"{generate_image(prompt)} MMMM")

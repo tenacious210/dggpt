@@ -8,6 +8,9 @@ from dggpt.request import request_phrases
 logger = logging.getLogger(__name__)
 
 SPAM_SEARCH_AMOUNT = 75
+DESTINY_LINK_REGEX = re.compile(
+    "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+)
 
 
 def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
@@ -74,4 +77,10 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
     if too_similar(message, message_history):
         return True
 
-    return any(check(message) for check in (unique, repeated, ascii, bad_word))
+    def tags_destiny_with_link(message: str):
+        return "https" in message.lower() and "destiny" in message.lower()
+
+    return any(
+        check(message)
+        for check in (unique, repeated, ascii, bad_word, tags_destiny_with_link)
+    )

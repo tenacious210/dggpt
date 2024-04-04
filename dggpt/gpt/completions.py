@@ -40,6 +40,7 @@ client = OpenAI(api_key=OPENAI_KEY, timeout=20, max_retries=0)
 logger = logging.getLogger(__name__)
 
 CHAT_MODEL = "gpt-3.5-turbo"
+IMAGE_MODEL = "dall-e-3"
 
 
 def moderation_completion(message: str) -> list[str]:
@@ -80,7 +81,7 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
     except openai_errors as openai_error:
         error_name = type(openai_error).__name__
         error_message = (
-            f"sorry, I got a {error_name} from openai FeelsDankMan try again later"
+            f"sorry, I got a {error_name} from openai FeelsDankMan thanks sam altman"
         )
         logger.info("Got an openai error.")
         convo.append({"role": "assistant", "content": error_message})
@@ -90,3 +91,20 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
     logger.debug(f"Chat completion recieved\n  Output: {message}")
     add_monthly_tokens(rsp.usage.total_tokens)
     return convo
+
+
+def image_completion(prompt: str) -> str:
+    """
+    Gets an image from openai.
+    Takes in a prompt convo, returns the link to the image.
+    """
+
+    logger.debug(f"Sending image request...\n  Input: {prompt}")
+    rsp = client.images.generate(
+        model=IMAGE_MODEL,
+        prompt=prompt,
+        size="1024x1024",
+        quality="standard",
+        n=1,
+    )
+    return rsp.data[0].url

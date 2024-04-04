@@ -1,7 +1,7 @@
 # Ties together all of the gpt tools
 import logging
 from dggbot import Message
-from .completions import chat_completion
+from .completions import chat_completion, image_completion
 from .moderation import flag_check, remove_bad_words
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def generate_summary(debate: str, convo: list[dict]) -> list[dict]:
     debate = remove_bad_words(debate)
     flag_check(debate)
     convo.append(summary_message(debate))
-    return chat_completion(convo)
+    return chat_completion(convo, max_tokens=100)
 
 
 def generate_solution(convo: list[dict]) -> list[dict]:
@@ -45,3 +45,10 @@ def generate_solution(convo: list[dict]) -> list[dict]:
     PROMPT = "Is anyone being unreasonable? Be concise. Do not give a neutral answer."
     convo.append(summary_message(PROMPT))
     return chat_completion(convo)
+
+
+def generate_image(prompt: str) -> str:
+    """Generates an image from a prompt"""
+    logger.info("Getting image...")
+    flag_check(prompt)
+    return image_completion(prompt)

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 import re
 import requests
-from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +12,6 @@ RUSTLE_LINK = "rustlesearch.dev/"
 LOG_LINK = "https://api-v2.rustlesearch.dev/anon/search"
 PHRASE_LINK = "https://vyneer.me/tools/phrases?ts=1"
 EMOTE_LINK = "https://tena.dev/api/emotes"
-
-CHARITY_LINK = "https://www.againstmalaria.com/Fundraiser.aspx?FundraiserID=8960"
-DONOR_TABLE_ID = "MainContent_UcFundraiserSponsors1_grdDonors"
-TOTALS_ID = "MainContent_pnlTotals"
-GRAND_TOTAL_ID = "MainContent_lblGrandTotal"
 
 
 def _format_delta(delta: timedelta) -> str:
@@ -100,25 +94,6 @@ def request_debate(
     return debate
 
 
-def request_charity_info() -> dict:
-    charity_details = {
-        "amount_raised": "",
-        "last_donor": {"name": "", "comment": "", "amount": ""},
-    }
-    charity_soup = BeautifulSoup(requests.get(CHARITY_LINK).text, "html.parser")
-    totals = charity_soup.find("div", id=TOTALS_ID)
-    charity_details["amount_raised"] = totals.find("span", id=GRAND_TOTAL_ID).text
-
-    donor_table = charity_soup.find("table", id=DONOR_TABLE_ID)
-    rows = donor_table.find_all("tr")
-    cols = [d.text for d in rows[1].find_all("td")]
-    charity_details["last_donor"]["name"] = cols[1].strip()
-    charity_details["last_donor"]["amount"] = cols[4].strip()
-    charity_details["last_donor"]["comment"] = cols[7].strip()
-
-    return charity_details
-
-
 def request_logs(user: str, term: str = None) -> dict:
     log_info = {"log_link": "", "last_seen": None, "hits": None}
     query = f"?channel=Destinygg&username={user}"
@@ -140,3 +115,11 @@ def request_logs(user: str, term: str = None) -> dict:
         seen_delta = datetime.utcnow() - last_seen
         log_info["last_seen"] = _format_delta(seen_delta)
     return log_info
+
+
+def request_latest_log(user: str):
+    query = f"?channel=Destinygg&username={user}"
+    logs = requests.get(LOG_LINK + query).json()
+    if logs["error"]:
+        raise Exception(f"Error from rustlesearch: {logs['error']}")
+    return logs["data"]["messages"][0]
