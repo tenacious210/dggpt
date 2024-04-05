@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  dggpt:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./config:/dggpt/config
