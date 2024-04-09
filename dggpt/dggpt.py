@@ -94,23 +94,6 @@ class DGGPTBot(DGGBot):
             self.end_quickdraw(nick, data)
         if self.simonsays["emote"] and data == self.simonsays["emote"]:
             self.end_simonsays(nick)
-        if (
-            data.startswith(">")
-            and "next chatter" in data.lower()
-            and not self.check_cooldown()
-        ):
-            responses = (
-                "me",
-                "I can't even deny it, that's me LULW",
-                "me tbh...",
-                "LITERALLY ME LULW",
-                "no u",
-                "no u!",
-                "no u WEOW",
-                f"no u {nick}",
-            )
-            self.send(choice(responses))
-            self.last_sent = datetime.now()
 
     def respond_with_flags(self, nick: str, data: str):
         if flags := flag_check(data, raise_error=False):
