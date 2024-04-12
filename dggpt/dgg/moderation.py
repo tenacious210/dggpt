@@ -7,6 +7,7 @@ from dggpt.request import request_phrases
 
 logger = logging.getLogger(__name__)
 
+SIMILARITY_MINIMUM_LEN = 85
 SPAM_SEARCH_AMOUNT = 75
 DESTINY_LINK_REGEX = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
@@ -62,7 +63,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
             dist = Levenshtein.distance(longer_message, shorter_message)
             return (longer_length - dist) / float(longer_length)
 
-        if len(message) < 100:
+        if len(message) < SIMILARITY_MINIMUM_LEN:
             return False
         for old_message in message_history:
             if similarity(message.lower().strip(), old_message.lower().strip()) > 0.9:
