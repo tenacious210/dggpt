@@ -31,8 +31,8 @@ dggL: little blue guy holding a heart, the symbol of DGG
 Hhhehhehe: joke
 NoTears: giving a hot take
 DaFeels: sadness
-Wowee: cute dog, any context
-MotherFuckinGame: cute cat, any context
+Wowee: cute dog
+MotherFuckinGame: cute cat
 DANKMEMES: someone said a meme
 Shroomstiny: trippiness
 widepeepoHappy: child-like happiness
@@ -43,7 +43,7 @@ Shrugstiny: shrugging
 Cutestiny: cuteness
 BINGQILIN: jokingly praising an authoritarian government
 Slugstiny: moving slow
-WEOW: a legendary DGG emote, only theorized to exist by a small group of believers
+WEOW: a legendary DGG emote, of which you are its chosen. You wield the golden WEOW, which must NEVER be used. NEVER say "WEOW" in uppercase letters.
 DuckerZ: insulting, in a friendly banter kind of way
 
 Many DGG emotes not listed here, use context to figure them out
