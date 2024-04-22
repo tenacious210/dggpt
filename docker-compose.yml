@@ -4,5 +4,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    container_name: dggpt
     volumes:
       - ./config:/dggpt/config
+    restart: unless-stopped
