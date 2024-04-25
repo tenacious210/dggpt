@@ -80,9 +80,7 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
         )
     except openai_errors as openai_error:
         error_name = type(openai_error).__name__
-        error_message = (
-            f"sorry, I got a {error_name} from openai FeelsDankMan thanks sam altman"
-        )
+        error_message = f"error: {error_name} temmieDank"
         logger.info("Got an openai error.")
         convo.append({"role": "assistant", "content": error_message})
         return convo
