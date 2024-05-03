@@ -23,7 +23,7 @@ from .request import (
     request_debate,
     request_emotes,
     request_phrases,
-    request_logs,
+    request_stream_status,
     request_latest_log,
 )
 
@@ -55,6 +55,7 @@ class DGGPTBot(DGGBot):
             "time_started": datetime.now(),
             "record": read_qd_record(),
         }
+        Thread(target=self.update_live_status).start()
         logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
     def send(self, data: str):
@@ -123,6 +124,9 @@ class DGGPTBot(DGGBot):
                 return False
             logger.info("Check pass: Admin requested")
             return True
+        if self.stream_is_live:
+            logger.info("Check fail: Stream is live")
+            return False
         if remaining := self.check_cooldown():
             logger.info(f"Check fail: On cooldown for another {remaining}s")
             return False
@@ -327,3 +331,9 @@ class DGGPTBot(DGGBot):
         logger.info(f"!image was used with prompt: {prompt}")
         self.last_sent = datetime.now()
         self.send(f"{generate_image(prompt)} MMMM")
+
+    def update_live_status(self):
+        while True:
+            self.stream_is_live = request_stream_status()
+            logger.debug(f"Live status: {self.stream_is_live}")
+            sleep(60)

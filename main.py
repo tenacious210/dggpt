@@ -12,7 +12,7 @@ User._name_regex = _name_regex
 
 import os
 import logging
-from dggbot import Message, PrivateMessage
+from dggbot import Message
 from dggpt import DGGPTBot
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))

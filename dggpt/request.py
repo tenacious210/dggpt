@@ -1,8 +1,7 @@
 # Handles all requests that use the requests module
 import logging
 from functools import cache
-from datetime import datetime, timedelta
-from urllib.parse import quote
+from datetime import datetime
 import re
 import requests
 
@@ -12,24 +11,7 @@ RUSTLE_LINK = "rustlesearch.dev/"
 LOG_LINK = "https://api-v2.rustlesearch.dev/anon/search"
 PHRASE_LINK = "https://vyneer.me/tools/phrases?ts=1"
 EMOTE_LINK = "https://tena.dev/api/emotes"
-
-
-def _format_delta(delta: timedelta) -> str:
-    if years := delta.days // 365:
-        unit, amount = "year", years
-    elif months := delta.days // 30:
-        unit, amount = "month", months
-    elif days := delta.days % 30:
-        unit, amount = "day", days
-    elif hours := delta.seconds // 3600:
-        unit, amount = "hour", hours
-    elif minutes := delta.seconds // 60:
-        unit, amount = "minute", minutes
-    elif seconds := delta.seconds % 60:
-        unit, amount = "second", seconds
-    if amount > 1:
-        unit += "s"
-    return f"{amount} {unit}"
+STREAM_STATUS_LINK = "https://www.destiny.gg/api/info/stream"
 
 
 @cache
@@ -94,32 +76,14 @@ def request_debate(
     return debate
 
 
-def request_logs(user: str, term: str = None) -> dict:
-    log_info = {"log_link": "", "last_seen": None, "hits": None}
-    query = f"?channel=Destinygg&username={user}"
-    if term:
-        query += f"&text={quote(term)}"
-    logs = requests.get(LOG_LINK + query).json()
-    if logs["error"]:
-        raise Exception(f"Error from rustlesearch: {logs['error']}")
-    messages = logs["data"]["messages"]
-    log_info["log_link"] = RUSTLE_LINK + query
-    if term:
-        message_num = len(messages)
-        log_info["hits"] = str(message_num)
-        if message_num >= 100:
-            log_info["hits"] += "+"
-    else:
-        last_seen_str = messages[0]["ts"]
-        last_seen = datetime.strptime(last_seen_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-        seen_delta = datetime.utcnow() - last_seen
-        log_info["last_seen"] = _format_delta(seen_delta)
-    return log_info
-
-
-def request_latest_log(user: str):
+def request_latest_log(user: str) -> str:
     query = f"?channel=Destinygg&username={user}"
     logs = requests.get(LOG_LINK + query).json()
     if logs["error"]:
         raise Exception(f"Error from rustlesearch: {logs['error']}")
     return logs["data"]["messages"][0]
+
+
+def request_stream_status() -> bool:
+    streams = requests.get(STREAM_STATUS_LINK).json()["data"]["streams"]
+    return any(streams[platform]["live"] for platform in streams if streams[platform])
