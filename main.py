@@ -30,7 +30,7 @@ def run(msg: Message):
     try:
         exec(msg.data.split(maxsplit=1)[1], globals())
     except Exception as e:
-        bot.send(f"error: {e}")
+        bot.send(f"error: {e} temmieDank")
 
 
 @bot.event()
