@@ -143,7 +143,8 @@ class DGGPTBot(DGGBot):
         responses = (
             f"{user} nah, I don't feel like it MMMM",
             f"/me ignores {user}'s request TF",
-            f"/me stares intensely at {user} Stare",
+            f"/me doesn't understand {user}'s request temmieDank",
+            f"/me ignores {user} MMMM",
         )
         self.send(choice(responses))
         return
