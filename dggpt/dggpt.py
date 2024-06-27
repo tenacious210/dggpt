@@ -162,6 +162,9 @@ class DGGPTBot(DGGBot):
             self.send_filter_response(nick)
             delete_last_prompt(self.convo)
             return
+        if formatted.isspace() or formatted == "":
+            self.send_filter_response(nick)
+            return
         self.send(formatted)
 
     def respond_to_log(self, nick: str):
