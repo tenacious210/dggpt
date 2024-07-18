@@ -24,4 +24,4 @@ def count_tokens(convo: list[dict]) -> int:
 
 def get_cost_from_tokens() -> int:
     """Read the token tally from monthly_tokens.json and return it in dollars"""
-    return round(read_monthly_tokens() / 1000 * 0.00052, 2)
+    return round(read_monthly_tokens() / 1000000 * 0.156, 2)
