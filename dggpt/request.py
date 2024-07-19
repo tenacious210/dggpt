@@ -82,8 +82,3 @@ def request_latest_log(user: str) -> str:
     if logs["error"]:
         raise Exception(f"Error from rustlesearch: {logs['error']}")
     return logs["data"]["messages"][0]
-
-
-def request_stream_status() -> bool:
-    streams = requests.get(STREAM_STATUS_LINK).json()["data"]["streams"]
-    return any(streams[platform]["live"] for platform in streams if streams[platform])

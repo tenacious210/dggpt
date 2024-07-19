@@ -4,7 +4,7 @@ from collections import deque, Counter
 from random import choice
 from datetime import datetime, timedelta
 from time import sleep
-from dggbot import DGGBot, Message
+from dggbot import DGGBot, DGGLive, Message, StreamInfo
 from .config import (
     BASE_CONVO,
     BASE_SUMMARY,
@@ -23,7 +23,6 @@ from .request import (
     request_debate,
     request_emotes,
     request_phrases,
-    request_stream_status,
     request_latest_log,
 )
 
@@ -38,6 +37,7 @@ class DGGPTBot(DGGBot):
         self.gpt_config = read_config()
         super().__init__(self.gpt_config["dgg_key"])
         self._avoid_dupe = True
+        self.stream_is_live: bool = False
         self.last_sent: datetime = datetime.now() - timedelta(seconds=60)
         self.convo: list[dict] = list(BASE_CONVO)
         self.summaries: list[dict] = list(BASE_SUMMARY)
@@ -337,7 +337,12 @@ class DGGPTBot(DGGBot):
         self.send(f"{generate_image(prompt)} MMMM")
 
     def update_live_status(self):
-        while True:
-            self.stream_is_live = request_stream_status()
+        """Runs as a thread, updates stream status"""
+        live = DGGLive()
+
+        @live.event()
+        def on_streaminfo(streaminfo: StreamInfo):
+            self.stream_is_live = streaminfo.is_live()
             logger.debug(f"Live status: {self.stream_is_live}")
-            sleep(60)
+
+        live.run_forever()
