@@ -5,7 +5,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-ENV LOGLEVEL=DEBUG
+ENV LOGLEVEL=INFO
 
 RUN adduser -D appuser
 RUN mkdir -p /dggpt/config && chown -R appuser:appuser /dggpt/config

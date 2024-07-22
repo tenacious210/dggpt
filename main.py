@@ -15,7 +15,7 @@ import logging
 from dggbot import Message
 from dggpt import DGGPTBot
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 for logger_name in ("websocket", "httpx"):
     logging.getLogger(logger_name).setLevel("CRITICAL")
 for logger_name in ("dgg-bot", "openai", "urllib3"):
