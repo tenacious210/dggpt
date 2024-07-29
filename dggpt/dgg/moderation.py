@@ -23,7 +23,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
             if total_words == 0:
                 return False
             if unique_words / total_words <= 0.45:
-                logger.info(f'Failed uniqueness test:\n  "{message}"')
+                logger.debug(f'Failed uniqueness test:\n  "{message}"')
                 return True
         return False
 
@@ -32,7 +32,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
             return False
         words = message.split()
         if not all(len(mess) < 90 / 1.5 or len(set(mess)) >= 9 for mess in words):
-            logger.info(f'Failed repetition test:\n  "{message}"')
+            logger.debug(f'Failed repetition test:\n  "{message}"')
             return True
         return False
 
@@ -40,7 +40,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
         non_ascii_count = len(re.findall(r"[^\x20-\x7F]", message))
         ascii_punct_count = len(re.findall(r"[\x21-\x2F\x3A-\x40]", message))
         if non_ascii_count > 20 or ascii_punct_count > 40:
-            logger.info(f'Failed ascii test:\n  "{message}"')
+            logger.debug(f'Failed ascii test:\n  "{message}"')
             return True
         return False
 
@@ -49,7 +49,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
         banned_phrase = any(p.lower() in message.lower() for p in phrases)
         banned_regex = any(r.search(message) for r in regex_phrases)
         if banned_phrase or banned_regex:
-            logger.info(f'Failed bad word test:\n  "{message}"')
+            logger.debug(f'Failed bad word test:\n  "{message}"')
             return True
         return False
 
@@ -67,7 +67,7 @@ def will_trigger_bot_filter(message: str, message_history: deque[str]) -> bool:
             return False
         for old_message in message_history:
             if similarity(message.lower().strip(), old_message.lower().strip()) > 0.9:
-                logger.info(
+                logger.debug(
                     "Failed similarity test:"
                     + f'\n  Input message: "{message}"'
                     + f'\n  Other message: "{old_message}"'

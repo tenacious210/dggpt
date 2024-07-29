@@ -59,7 +59,7 @@ class DGGPTBot(DGGBot):
         logger.info(f"Bot initialized, prompt tokens: {count_tokens(self.convo)}")
 
     def send(self, data: str):
-        logger.info(f"Sending message:\n{data}")
+        logger.debug(f"Sending message:\n{data}")
         if len(data) < 512:
             super().send(data)
         else:
@@ -113,30 +113,30 @@ class DGGPTBot(DGGBot):
 
     def pre_response_check(self, nick: str, data: str) -> bool:
         if data.startswith(self.prefix):
-            logger.info("Check fail: Name and command used at the same time")
+            logger.debug("Check fail: Name and command used at the same time")
             return False
         if self.convo[-1]["role"] == "user":
-            logger.info("Check fail: Still waiting on the last completion")
+            logger.warning("Check fail: Still waiting on the last completion")
             return False
         if nick in self.gpt_config["admins"]:
             if self.respond_with_flags(nick, data):
-                logger.info(f"Check fail: Admin prompt was flagged")
+                logger.debug(f"Check fail: Admin prompt was flagged")
                 return False
-            logger.info("Check pass: Admin requested")
+            logger.debug("Check pass: Admin requested")
             return True
         if self.stream_is_live:
-            logger.info("Check fail: Stream is live")
+            logger.debug("Check fail: Stream is live")
             return False
         if remaining := self.check_cooldown():
-            logger.info(f"Check fail: On cooldown for another {remaining}s")
+            logger.debug(f"Check fail: On cooldown for another {remaining}s")
             return False
         if nick in self.gpt_config["blacklist"]:
-            logger.info(f"Check fail: {nick} is blacklisted")
+            logger.debug(f"Check fail: {nick} is blacklisted")
             return False
         if self.respond_with_flags(nick, data):
-            logger.info(f"Check fail: Prompt was flagged")
+            logger.debug(f"Check fail: Prompt was flagged")
             return False
-        logger.info("Check pass")
+        logger.debug("Check pass")
         return True
 
     def send_filter_response(self, user: str):
@@ -158,7 +158,7 @@ class DGGPTBot(DGGBot):
         generate_response(nick, data, self.convo, self.max_resp_tokens)
         formatted = format_dgg_message(self.convo[-1]["content"], nick)
         if will_trigger_bot_filter(formatted, self.message_history):
-            logger.info("Filter check failed")
+            logger.debug("Filter check failed")
             self.send_filter_response(nick)
             delete_last_prompt(self.convo)
             return
@@ -177,7 +177,7 @@ class DGGPTBot(DGGBot):
         if nick.lower() not in formatted.lower():
             formatted = f"{nick} {formatted}"
         if will_trigger_bot_filter(formatted, self.message_history):
-            logger.info("Filter check failed")
+            logger.debug("Filter check failed")
             self.send_filter_response(nick)
             delete_last_prompt(self.convo)
             return
@@ -188,13 +188,13 @@ class DGGPTBot(DGGBot):
         self.last_sent = datetime.now()
 
     def send_cost(self):
-        logger.info(f"!cost was called")
+        logger.debug(f"!cost was called")
         cost = get_cost_from_tokens()
         dollars = "{:,.2f}".format(cost)
         self.send(f"tena has lost ${dollars} this month LULW")
 
     def send_summary(self, user1: str, user2: str, amount: str | int):
-        logger.info(f"!summarize was used on {user1} & {user2}")
+        logger.debug(f"!summarize was used on {user1} & {user2}")
         self.last_sent = datetime.now()
         self.summaries = list(BASE_SUMMARY)
         debate = request_debate(user1, user2, amount)
@@ -205,7 +205,7 @@ class DGGPTBot(DGGBot):
         self.send(self.summaries[-1]["content"])
 
     def send_solution(self):
-        logger.info("!solve was called")
+        logger.debug("!solve was called")
         if self.summaries == list(BASE_SUMMARY):
             self.send("I don't have a summary stored MMMM")
             return
@@ -215,18 +215,17 @@ class DGGPTBot(DGGBot):
         self.summaries = list(BASE_SUMMARY)
 
     def clear_caches(self):
-        logger.info("!clearcache was called")
+        logger.debug("!clearcache was called")
         request_phrases.cache_clear()
         request_emotes.cache_clear()
         self.send("PepOk cleared caches")
 
     def clear_convo(self):
-        logger.info("!wipe was called")
         self.convo = list(BASE_CONVO)
-        logger.info(f"Convo wiped, tokens at {count_tokens(self.convo)}")
+        logger.debug(f"Convo wiped, tokens at {count_tokens(self.convo)}")
 
     def clear_last_prompt(self):
-        logger.info("!wipelast was called")
+        logger.debug("!wipelast was called")
         delete_last_prompt(self.convo)
         self.send(f"PepOk deleted the last prompt")
 
@@ -245,12 +244,12 @@ class DGGPTBot(DGGBot):
         self.send(f"PepOk {name} unblacklisted")
 
     def change_cooldown(self, seconds: str):
-        logger.info("!cd was used")
         self.cooldown = self._convert_to_int(seconds)
+        logger.info(f"cooldown set to {seconds}")
         self.send(f"PepOk changed the cooldown to {self.cooldown}s")
 
     def change_token_limit(self, limit: str):
-        logger.info("!maxtokens was used")
+        logger.debug("!maxtokens was used")
         limit = self._convert_to_int(limit)
         base_tokens = count_tokens(list(BASE_CONVO))
         if limit > 3996 or limit < base_tokens:
@@ -260,7 +259,7 @@ class DGGPTBot(DGGBot):
         self.send(f"PepOk changed the max tokens to {self.max_tokens}")
 
     def change_resp_token_limit(self, limit: str):
-        logger.info("!maxresp was used")
+        logger.debug("!maxresp was used")
         limit = self._convert_to_int(limit)
         if limit < 1:
             self.send(f"must be positive MMMM")
@@ -269,14 +268,14 @@ class DGGPTBot(DGGBot):
         self.send(f"PepOk changed the max response length to {self.max_resp_tokens}")
 
     def start_quickdraw(self):
-        logger.info("Starting quickdraw")
+        logger.debug("Starting quickdraw")
         self.send("> QUICKDRAW! PARDNER vs YEEHAW")
         self.quickdraw["waiting"] = True
         self.quickdraw["time_started"] = datetime.now()
         return
 
     def end_quickdraw(self, nick: str, data: str):
-        logger.info(f"Quickdraw ended by {nick}")
+        logger.debug(f"Quickdraw ended by {nick}")
         self.quickdraw["waiting"] = False
         delta = datetime.now() - self.quickdraw["time_started"]
         response_time = round(delta.total_seconds(), 2)
@@ -310,11 +309,11 @@ class DGGPTBot(DGGBot):
         self.simonsays["winners"] = []
 
     def start_simonsays(self):
-        logger.info("Starting simon says")
+        logger.debug("Starting simon says")
         Thread(target=self.simonsays_thread).start()
 
     def end_simonsays(self, nick: str):
-        logger.info(f"Simon says ended by {nick}")
+        logger.debug(f"Simon says ended by {nick}")
         delta = datetime.now() - self.simonsays["time_started"]
         response_time = round(delta.total_seconds() * 1000)
         self.send(f"{nick} got it in {response_time} ms Klappa")
@@ -332,7 +331,7 @@ class DGGPTBot(DGGBot):
         self.send(f"You got {choice(['heads', 'tails'])}")
 
     def send_image(self, prompt):
-        logger.info(f"!image was used with prompt: {prompt}")
+        logger.debug(f"!image was used with prompt: {prompt}")
         self.last_sent = datetime.now()
         self.send(f"{generate_image(prompt)} MMMM")
 

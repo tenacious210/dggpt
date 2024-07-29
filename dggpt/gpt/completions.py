@@ -55,7 +55,7 @@ def moderation_completion(message: str) -> list[str]:
         if category[1]:
             flags.append(category[0])
     if flags:
-        logger.info(
+        logger.debug(
             f"Moderation flags triggered:"
             + f'\n  Input: "{message}"'
             + f'\n  Flags: {", ".join(flags)}'
@@ -81,7 +81,7 @@ def chat_completion(convo: list[dict], max_tokens: int = 65) -> list[dict]:
     except openai_errors as openai_error:
         error_name = type(openai_error).__name__
         error_message = f"error: {error_name} temmieDank"
-        logger.info("Got an openai error.")
+        logger.warning(f"Got an openai error: {openai_error}")
         convo.append({"role": "assistant", "content": error_message})
         return convo
     message = dict(rsp.choices[0].message)

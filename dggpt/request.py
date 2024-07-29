@@ -52,7 +52,7 @@ def request_debate(
     try:
         amount = int(amount)
     except ValueError:
-        logger.info('"amount" was given a non-int value')
+        logger.debug('arg "amount" was given a non int value')
         return "Message amount wasn't an integer MMMM"
     if not day:
         day = datetime.utcnow().strftime("%Y-%m-%d")
@@ -72,7 +72,7 @@ def request_debate(
             break
         debate.append(f'{message["username"]}: {message["text"]}')
         i += 1
-    logger.info(f"{amount} messages loaded from rustlesearch.dev")
+    logger.debug(f"{amount} messages loaded from rustlesearch.dev")
     return debate
 
 
