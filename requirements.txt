@@ -7,4 +7,3 @@ Levenshtein==0.25.1
 beautifulsoup4==4.12.3
 emoji==2.12.1
 elevenlabs==1.6.1
-pygame==2.6.0
