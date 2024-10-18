@@ -11,14 +11,16 @@ User._name_regex = _name_regex
 ###
 
 import os
+import sys
 import logging
 from dggbot import Message
 from dggpt import DGGPTBot
 
+sys.tracebacklimit = 0
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-for logger_name in ("websocket", "httpx"):
-    logging.getLogger(logger_name).setLevel("CRITICAL")
-for logger_name in ("dgg-bot", "openai", "urllib3"):
+for logger_name in ("websocket", "httpx", "dgg-bot"):
+    logging.getLogger(logger_name).disabled = True
+for logger_name in ("openai", "urllib3"):
     logging.getLogger(logger_name).setLevel("INFO")
 
 bot = DGGPTBot()
