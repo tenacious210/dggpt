@@ -8,6 +8,9 @@
     "openai_key": {
       "type": "string"
     },
+    "elevenlabs_key": {
+      "type": "string"
+    },
     "admins": {
       "type": "array",
       "items": {

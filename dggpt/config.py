@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 os.chdir("config")
 
 with open("config.json", "r") as config_json:
-    OPENAI_KEY = json.load(config_json)["openai_key"]
+    config = json.load(config_json)
+    OPENAI_KEY = config["openai_key"]
+    ELEVENLABS_KEY = config["elevenlabs_key"]
 
 with open("system.txt", "r") as sys_txt:
     SYSTEM = sys_txt.read()

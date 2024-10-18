@@ -17,6 +17,8 @@ from .gpt import generate_response, generate_summary, generate_solution, generat
 from .gpt.convo import delete_last_prompt, trim_tokens
 from .gpt.tokens import get_cost_from_tokens, count_tokens
 from .gpt.moderation import flag_check
+from .tts import generate_tts
+from .tts.formatter import format_tts_message
 from .dgg import format_dgg_message, will_trigger_bot_filter
 from .dgg.moderation import SPAM_SEARCH_AMOUNT
 from .request import (
@@ -38,6 +40,7 @@ class DGGPTBot(DGGBot):
         super().__init__(self.gpt_config["dgg_key"])
         self._avoid_dupe = True
         self.stream_is_live: bool = False
+        self.tts_mode: bool = False
         self.last_sent: datetime = datetime.now() - timedelta(seconds=60)
         self.convo: list[dict] = list(BASE_CONVO)
         self.summaries: list[dict] = list(BASE_SUMMARY)
@@ -118,7 +121,16 @@ class DGGPTBot(DGGBot):
         if self.convo[-1]["role"] == "user":
             logger.warning("Check fail: Still waiting on the last completion")
             return False
+        if "#kick/gpt71" in data:
+            logger.debug(f"Check fail: Name used in Kick embed")
+            return False
         if nick in self.gpt_config["admins"]:
+            if nick == "tena" or nick == "Destiny":
+                logger.debug("Check pass: Owner requested")
+                return True
+            if self.check_cooldown() and self.tts_mode:
+                logger.debug(f"Check fail: Admin prompt on cooldown during tts mode")
+                return False
             if self.respond_with_flags(nick, data):
                 logger.debug(f"Check fail: Admin prompt was flagged")
                 return False
@@ -156,16 +168,23 @@ class DGGPTBot(DGGBot):
         self.last_sent = datetime.now()
         self.convo = trim_tokens(self.convo, self.max_tokens)
         generate_response(nick, data, self.convo, self.max_resp_tokens)
-        formatted = format_dgg_message(self.convo[-1]["content"], nick)
-        if will_trigger_bot_filter(formatted, self.message_history):
-            logger.debug("Filter check failed")
-            self.send_filter_response(nick)
-            delete_last_prompt(self.convo)
-            return
-        if formatted.isspace() or formatted == "":
-            self.send_filter_response(nick)
-            return
-        self.send(formatted)
+        if self.tts_mode:
+            resp = self.convo[-1]["content"]
+            if nick.lower() not in resp:
+                formatted = f"{nick}, {resp}"
+            resp = format_tts_message(resp)
+            generate_tts(resp)
+        else:
+            formatted = format_dgg_message(self.convo[-1]["content"], nick)
+            if will_trigger_bot_filter(formatted, self.message_history):
+                logger.debug("Filter check failed")
+                self.send_filter_response(nick)
+                delete_last_prompt(self.convo)
+                return
+            if formatted.isspace() or formatted == "":
+                self.send_filter_response(nick)
+                return
+            self.send(formatted)
 
     def respond_to_log(self, nick: str):
         logger.debug("!respond was called")
@@ -266,6 +285,12 @@ class DGGPTBot(DGGBot):
             return
         self.max_resp_tokens = limit
         self.send(f"PepOk changed the max response length to {self.max_resp_tokens}")
+
+    def toggle_tts_mode(self):
+        self.tts_mode = not self.tts_mode
+        word = "enabled" if self.tts_mode else "disabled"
+        logger.info(f"TTS mode was {word}")
+        self.send(f"PepOk TTS mode {word}")
 
     def start_quickdraw(self):
         logger.debug("Starting quickdraw")

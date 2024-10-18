@@ -34,6 +34,13 @@ def run(msg: Message):
         bot.send(f"error: {e} temmieDank")
 
 
+@bot.command()
+def tts(msg: Message):
+    if not msg.nick == "tena":
+        return
+    bot.toggle_tts_mode()
+
+
 @bot.event()
 def on_mention(msg: Message):
     bot.respond_to_mention(msg.nick, msg.data)
