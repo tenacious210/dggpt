@@ -6,4 +6,5 @@ services:
     container_name: dggpt
     volumes:
       - ./config:/dggpt/config
+      - ./mp3files:/dggpt/mp3files
     restart: unless-stopped
