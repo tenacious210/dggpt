@@ -1,5 +1,4 @@
 # Formats responses to make them TTS appropriate
-import re
 import logging
 from emoji import replace_emoji
 from dggpt.request import request_emotes
