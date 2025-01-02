@@ -46,8 +46,8 @@ class DGGPTBot(DGGBot):
         self.summaries: list[dict] = list(BASE_SUMMARY)
         self.message_history: deque[str] = deque(maxlen=SPAM_SEARCH_AMOUNT)
         self.cooldown = 30
-        self.max_tokens = 3000
-        self.max_resp_tokens = 100
+        self.max_tokens = 2500
+        self.max_resp_tokens = 80
         self.simonsays = {
             "emote": None,
             "winners": [],
