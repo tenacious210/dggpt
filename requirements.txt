@@ -5,5 +5,5 @@ requests==2.32.3
 jsonschema==4.22.0
 Levenshtein==0.25.1
 beautifulsoup4==4.12.3
-emoji==2.12.1
+emoji==2.14.0
 elevenlabs==1.6.1
