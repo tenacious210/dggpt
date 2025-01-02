@@ -20,7 +20,7 @@ from .gpt.moderation import flag_check
 from .tts import generate_tts
 from .tts.formatter import format_tts_message
 from .dgg import format_dgg_message, will_trigger_bot_filter
-from .dgg.moderation import SPAM_SEARCH_AMOUNT
+from .dgg.moderation import bad_word, SPAM_SEARCH_AMOUNT
 from .request import (
     request_debate,
     request_emotes,
@@ -173,6 +173,9 @@ class DGGPTBot(DGGBot):
             if nick.lower() not in resp:
                 formatted = f"{nick}, {resp}"
             resp = format_tts_message(resp)
+            if bad_word(resp):
+                logger.warning(f"Bad word in TTS prompt:\n{resp}")
+                return
             generate_tts(resp)
         else:
             formatted = format_dgg_message(self.convo[-1]["content"], nick)
