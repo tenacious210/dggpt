@@ -5,3 +5,4 @@ misc
 config.json
 monthly_tokens.json
 quickdraw_record.json
+*.mp3

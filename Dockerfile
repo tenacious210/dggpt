@@ -8,7 +8,9 @@ COPY . .
 ENV LOGLEVEL=INFO
 
 RUN adduser -D appuser
-RUN mkdir -p /dggpt/config && chown -R appuser:appuser /dggpt/config
+RUN chown -R appuser:appuser /dggpt
+RUN mkdir -p /dggpt/config
+RUN mkdir -p /dggpt/mp3files
 USER appuser
 
 ENTRYPOINT ["python", "main.py"]
