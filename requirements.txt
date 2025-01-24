@@ -5,4 +5,4 @@ requests==2.32.3
 jsonschema==4.23.0
 Levenshtein==0.26.1
 emoji==2.14.0
-elevenlabs==1.50.3
+elevenlabs==1.50.4
