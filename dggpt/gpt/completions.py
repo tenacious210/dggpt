@@ -39,7 +39,7 @@ client = OpenAI(api_key=OPENAI_KEY, timeout=20, max_retries=0)
 
 logger = logging.getLogger(__name__)
 
-CHAT_MODEL = "gpt-4o-mini"
+CHAT_MODEL = "gpt-5-nano"
 IMAGE_MODEL = "dall-e-3"
 
 
