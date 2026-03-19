@@ -1,15 +1,16 @@
-FROM python:3.14-alpine
+FROM python:3.14-slim
 
 WORKDIR /dggpt
+
+RUN adduser --disabled-password --gecos "" appuser && \
+    mkdir -p /dggpt/config && \
+    chown -R appuser:appuser /dggpt
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY --chown=appuser:appuser . .
 ENV LOGLEVEL=INFO
 
-RUN adduser -D appuser
-RUN chown -R appuser:appuser /dggpt
-RUN mkdir -p /dggpt/config
 USER appuser
-
 ENTRYPOINT ["python", "main.py"]
