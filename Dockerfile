@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:3.14-alpine
 
 WORKDIR /dggpt
 COPY requirements.txt .
@@ -10,7 +10,6 @@ ENV LOGLEVEL=INFO
 RUN adduser -D appuser
 RUN chown -R appuser:appuser /dggpt
 RUN mkdir -p /dggpt/config
-RUN mkdir -p /dggpt/mp3files
 USER appuser
 
 ENTRYPOINT ["python", "main.py"]

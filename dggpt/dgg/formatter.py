@@ -1,14 +1,13 @@
 # Formats responses to make them DGG appropriate
-import re
 import logging
 from emoji import replace_emoji
 from dggpt.request import request_emotes
 
 logger = logging.getLogger(__name__)
-PUNCS = tuple(". , ? ! ' \" > @ # ( ) - * :".split())
+PUNCS = tuple(". , ? ! ' \" > @ # ( ) - * : ~ —".split())
 
 
-def format_dgg_message(message: str, nick: str = None) -> str:
+def format_dgg_message(message: str) -> str:
     for emote in request_emotes():
         for punc in PUNCS:
             message = message.replace(f"{emote}{punc}", f"{emote} {punc}")

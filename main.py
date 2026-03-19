@@ -17,7 +17,7 @@ from dggbot import Message
 from dggpt import DGGPTBot
 
 sys.tracebacklimit = 0
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+logging.basicConfig(level=os.environ.get("LOGLEVEL"))
 for logger_name in ("websocket", "httpx", "dgg-bot"):
     logging.getLogger(logger_name).disabled = True
 for logger_name in ("openai", "urllib3"):
@@ -36,13 +36,6 @@ def run(msg: Message):
         bot.send(f"error: {e} temmieDank")
 
 
-@bot.command()
-def tts(msg: Message):
-    if not msg.nick == "tena":
-        return
-    bot.toggle_tts_mode()
-
-
 @bot.event()
 def on_mention(msg: Message):
     bot.respond_to_mention(msg.nick, msg.data)
@@ -58,38 +51,10 @@ def on_privmsg(msg: Message):
     bot.process_privmsg(msg.nick, msg.data)
 
 
-@bot.command(cooldown=30)
-def cost(msg: Message):
-    bot.send_cost()
-
-
-@bot.command(cooldown=30)
-def coinflip(msg: Message):
-    bot.send_coinflip()
-
-
-@bot.check(bot.is_admin)
-@bot.command(cooldown=30)
-def respond(msg: Message, user: str):
-    bot.respond_to_log(user)
-
-
 @bot.check(bot.is_admin)
 @bot.command(["send", "s"])
 def repeat(msg: Message):
     bot.repeat(msg.data)
-
-
-@bot.check(bot.is_admin)
-@bot.command()
-def summarize(msg: Message, user1: str, user2: str, amount: str = "10"):
-    bot.send_summary(user1, user2, amount)
-
-
-@bot.check(bot.is_admin)
-@bot.command()
-def solve(msg: Message):
-    bot.send_solution()
 
 
 @bot.check(bot.is_admin)
@@ -102,12 +67,6 @@ def clearcache(msg: Message):
 @bot.command()
 def wipe(msg: Message):
     bot.clear_convo()
-
-
-@bot.check(bot.is_admin)
-@bot.command()
-def wipelast(msg: Message):
-    bot.clear_last_prompt()
 
 
 @bot.check(bot.is_admin)
@@ -136,32 +95,8 @@ def maxresp(msg: Message, limit: str, *_):
 
 @bot.check(bot.is_admin)
 @bot.command()
-def maxtokens(msg: Message, limit: str, *_):
-    bot.change_token_limit(limit)
-
-
-@bot.check(bot.is_admin)
-@bot.command()
-def quickdraw(msg: Message):
-    bot.start_quickdraw()
-
-
-@bot.check(bot.is_admin)
-@bot.command()
-def simonsays(msg: Message):
-    bot.start_simonsays()
-
-
-@bot.command()
-def generate(msg: Message, prompt: str):
-    if not msg.nick == "tena":
-        return
-    bot.send_image(prompt=prompt)
-
-
-@bot.command(whisper_only=True)
-def spamcheck(msg: Message):
-    bot.spam_check(msg.nick, msg.data)
+def context(msg: Message, limit: str, *_):
+    bot.change_convo_limit(limit)
 
 
 if __name__ == "__main__":
